@@ -2,7 +2,7 @@
 
 namespace Firesphere\ElasticSearch\Services;
 
-class ElasticService
+class ElasticCoreService
 {
 
 }

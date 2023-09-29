@@ -4,6 +4,10 @@ namespace Firesphere\ElasticSearch\Admins;
 use Firesphere\ElasticSearch\Models\SearchSynonym;
 use SilverStripe\Admin\ModelAdmin;
 
+/**
+ * Class \Firesphere\ElasticSearch\Admins\SearchAdmin
+ *
+ */
 class SearchAdmin extends ModelAdmin
 {
 
