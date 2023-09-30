@@ -2,6 +2,7 @@
 
 namespace Firesphere\ElasticSearch\Indexes;
 
+use Firesphere\ElasticSearch\Traits\GetterSetterTrait;
 use Firesphere\SolrSearch\Factories\QueryComponentFactory;
 use Firesphere\SolrSearch\Factories\SchemaFactory;
 use LogicException;
@@ -18,7 +19,7 @@ abstract class BaseIndex
     use Extensible;
     use Configurable;
     use Injectable;
-
+    use GetterSetterTrait;
     /**
      * Field types that can be added
      * Used in init to call build methods from configuration yml
