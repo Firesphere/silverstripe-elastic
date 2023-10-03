@@ -2,6 +2,8 @@
 
 namespace Firesphere\ElasticSearch\Indexes;
 
+use Firesphere\ElasticSearch\Traits\BaseIndexTrait;
+use Firesphere\ElasticSearch\Traits\GetterSetterTrait;
 use Firesphere\SolrSearch\Factories\QueryComponentFactory;
 use Firesphere\SolrSearch\Factories\SchemaFactory;
 use LogicException;
@@ -18,11 +20,13 @@ abstract class BaseIndex
     use Extensible;
     use Configurable;
     use Injectable;
-
+    use GetterSetterTrait;
+    use BaseIndexTrait;
     /**
      * Field types that can be added
      * Used in init to call build methods from configuration yml
      *
+     * @todo use mapping for fieldtypes
      * @array
      */
     private static $fieldTypes = [
@@ -122,4 +126,10 @@ abstract class BaseIndex
         }
     }
 
+    /**
+     * Name of this index.
+     *
+     * @return string
+     */
+    abstract public function getIndexName();
 }
