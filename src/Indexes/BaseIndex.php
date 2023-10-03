@@ -127,14 +127,13 @@ abstract class BaseIndex
     }
 
     /**
-<<<<<<< Updated upstream
      * Name of this index.
      *
      * @return string
      */
     abstract public function getIndexName();
-}
-=======
+
+    /**
      * Default returns a SearchResult. It can return an ArrayData if FTS Compat is enabled
      *
      * @param BaseQuery $query
@@ -183,4 +182,3 @@ abstract class BaseIndex
     }
 
 }
->>>>>>> Stashed changes
