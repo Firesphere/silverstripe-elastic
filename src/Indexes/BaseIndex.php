@@ -127,9 +127,60 @@ abstract class BaseIndex
     }
 
     /**
+<<<<<<< Updated upstream
      * Name of this index.
      *
      * @return string
      */
     abstract public function getIndexName();
 }
+=======
+     * Default returns a SearchResult. It can return an ArrayData if FTS Compat is enabled
+     *
+     * @param BaseQuery $query
+     * @return SearchResult|ArrayData|mixed
+     * @throws HTTPException
+     * @throws ValidationException
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    public function doSearch(BaseQuery $query)
+    {
+        SiteState::alterQuery($query);
+        // Build the actual query parameters
+        $this->clientQuery = $this->buildSolrQuery($query);
+        // Set the sorting
+        $this->clientQuery->addSorts($query->getSort());
+
+        $this->extend('onBeforeSearch', $query, $this->clientQuery);
+
+        try {
+            $result = $this->client->select($this->clientQuery);
+        } catch (Exception $error) {
+            // @codeCoverageIgnoreStart
+            $logger = new SolrLogger();
+            $logger->saveSolrLog('Query');
+            throw $error;
+            // @codeCoverageIgnoreEnd
+        }
+
+        // Handle the after search first. This gets a raw search result
+        $this->extend('onAfterSearch', $result);
+        $searchResult = new SearchResult($result, $query, $this);
+        if ($this->doRetry($query, $result, $searchResult)) {
+            // We need to override the spellchecking with the previous spellcheck
+            // @todo refactor this to a cleaner way
+            $collation = $result->getSpellcheck();
+            $retryResults = $this->spellcheckRetry($query, $searchResult);
+            $this->retry = false;
+            return $retryResults->setCollatedSpellcheck($collation);
+        }
+
+        // And then handle the search results, which is a useable object for SilverStripe
+        $this->extend('updateSearchResults', $searchResult);
+
+        return $searchResult;
+    }
+
+}
+>>>>>>> Stashed changes

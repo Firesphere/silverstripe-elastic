@@ -2,22 +2,25 @@
 Name: ElasticSearch
 ---
 Firesphere\ElasticSearch\Services\ElasticCoreService:
+  config:
+    endpoint:
+      - host: elasticsearch
+        port: 9200
+        enterprise-search:
+          username: 'user'
+          password: 'pass'
+
   cpucores: 4
 Firesphere\ElasticSearch\Indexes\BaseIndex:
-  StickerTrade:
+  ConsumerHealth:
     Classes:
-      - Firesphere\StickerTrade\Models\Sticker
+      - Page
     FulltextFields:
       - Title
-      - Content
-      - Description
-      - Image.Title
-      - Tags.Title
-      - Owner.FirstName
-    FilterFields:
-      - OwnerID
-    FacetFields:
-      Firesphere\StickerTrade\Models\Tag:
-        BaseClass: Firesphere\StickerTrade\Models\Sticker
-        Field: Tags.ID
-        Title: Tag
+      - getElementsForSearch
+    FilterFields: []
+    FacetFields: []
+#      Firesphere\StickerTrade\Models\Tag:
+#        BaseClass: Firesphere\StickerTrade\Models\Sticker
+#        Field: Tags.ID
+#        Title: Tag
