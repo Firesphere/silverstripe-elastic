@@ -4,12 +4,11 @@ Name: ElasticSearch
 Firesphere\ElasticSearch\Services\ElasticCoreService:
   config:
     endpoint:
-      - host: elasticsearch
+      - host: https://es01
         port: 9200
         enterprise-search:
-          username: 'user'
-          password: 'pass'
-
+          username: 'elastic'
+          password: 'changeme'
   cpucores: 4
 Firesphere\ElasticSearch\Indexes\BaseIndex:
   ConsumerHealth:

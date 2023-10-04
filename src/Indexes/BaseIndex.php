@@ -2,10 +2,12 @@
 
 namespace Firesphere\ElasticSearch\Indexes;
 
+use Exception;
 use Firesphere\ElasticSearch\Traits\BaseIndexTrait;
 use Firesphere\ElasticSearch\Traits\GetterSetterTrait;
-use Firesphere\SolrSearch\Factories\QueryComponentFactory;
-use Firesphere\SolrSearch\Factories\SchemaFactory;
+use Firesphere\ElasticSearch\Factories\QueryComponentFactory;
+use Firesphere\ElasticSearch\Factories\SchemaFactory;
+use Firesphere\SolrSearch\Helpers\ElasticLogger;
 use LogicException;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Configurable;
@@ -13,7 +15,6 @@ use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Deprecation;
-use Solarium\QueryType\Select\Query\Query;
 
 abstract class BaseIndex
 {
@@ -73,7 +74,7 @@ abstract class BaseIndex
         $schemaFactory->setIndex($this);
         $schemaFactory->setStore(Director::isDev());
         $this->schemaFactory = $schemaFactory;
-        $this->queryFactory = Injector::inst()->get(QueryComponentFactory::class, false);
+//        $this->queryFactory = Injector::inst()->get(QueryComponentFactory::class, false);
 
         $this->extend('onBeforeInit');
         $this->init();
@@ -145,9 +146,9 @@ abstract class BaseIndex
      */
     public function doSearch(BaseQuery $query)
     {
-        SiteState::alterQuery($query);
+//        SiteState::alterQuery($query);
         // Build the actual query parameters
-        $this->clientQuery = $this->buildSolrQuery($query);
+        $this->clientQuery = $this->buildElasticQuery($query);
         // Set the sorting
         $this->clientQuery->addSorts($query->getSort());
 
@@ -157,8 +158,8 @@ abstract class BaseIndex
             $result = $this->client->select($this->clientQuery);
         } catch (Exception $error) {
             // @codeCoverageIgnoreStart
-            $logger = new SolrLogger();
-            $logger->saveSolrLog('Query');
+            $logger = new ElasticLogger();
+            $logger->saveElasticLog('Query');
             throw $error;
             // @codeCoverageIgnoreEnd
         }
