@@ -2,7 +2,7 @@
 
 namespace Firesphere\ElasticSearch\Services;
 
-use Elastic\EnterpriseSearch\Client;
+use GuzzleHttp\Client;
 use SilverStripe\Core\Config\Configurable;
 
 class ElasticCoreService
@@ -16,11 +16,12 @@ class ElasticCoreService
         $config = static::config()->get('config');
         $config['endpoint'][0]['host'] = sprintf('%s:%s', $config['endpoint'][0]['host'], $config['endpoint'][0]['port']);
 
-        $this->client = new Client($config['endpoint'][0]);
+        $client = new \Elastic\EnterpriseSearch\Client($config['endpoint'][0] + ['verify' => false]);
+        $this->client = $client;
 
     }
 
-    public function getClient(): Client
+    public function getClient()
     {
         return $this->client;
     }

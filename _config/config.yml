@@ -5,7 +5,7 @@ Firesphere\ElasticSearch\Services\ElasticCoreService:
   config:
     endpoint:
       - host: https://es01
-        port: 9200
+        port: 3002
         enterprise-search:
           username: 'elastic'
           password: 'changeme'
