@@ -4,20 +4,12 @@ Name: ElasticSearch
 Firesphere\ElasticSearch\Services\ElasticCoreService:
   cpucores: 4
 Firesphere\ElasticSearch\Indexes\BaseIndex:
-  StickerTrade:
+  health:
     Classes:
-      - Firesphere\StickerTrade\Models\Sticker
+      - Page
     FulltextFields:
       - Title
+      - getElementsForSearch
       - Content
-      - Description
-      - Image.Title
-      - Tags.Title
-      - Owner.FirstName
-    FilterFields:
-      - OwnerID
-    FacetFields:
-      Firesphere\StickerTrade\Models\Tag:
-        BaseClass: Firesphere\StickerTrade\Models\Sticker
-        Field: Tags.ID
-        Title: Tag
+    FilterFields: []
+    FacetFields: []

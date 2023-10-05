@@ -28,7 +28,7 @@
         "ext-json": "*",
         "silverstripe/framework": "^4|^5",
         "symbiote/silverstripe-queuedjobs": "^4|^5",
-        "elasticsearch/elasticsearch": "^8.10"
+        "elastic/enterprise-search": "^8"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7",
