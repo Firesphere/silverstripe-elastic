@@ -2,24 +2,14 @@
 Name: ElasticSearch
 ---
 Firesphere\ElasticSearch\Services\ElasticCoreService:
-  config:
-    endpoint:
-      - host: https://es01
-        port: 3002
-        enterprise-search:
-          username: 'elastic'
-          password: 'changeme'
   cpucores: 4
 Firesphere\ElasticSearch\Indexes\BaseIndex:
-  ConsumerHealth:
+  health:
     Classes:
       - Page
     FulltextFields:
       - Title
       - getElementsForSearch
+      - Content
     FilterFields: []
     FacetFields: []
-#      Firesphere\StickerTrade\Models\Tag:
-#        BaseClass: Firesphere\StickerTrade\Models\Sticker
-#        Field: Tags.ID
-#        Title: Tag
