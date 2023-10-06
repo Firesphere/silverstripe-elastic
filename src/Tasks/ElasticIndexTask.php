@@ -108,6 +108,22 @@ class ElasticIndexTask extends BuildTask
     }
 
     /**
+     * get the classes to run for this task execution
+     *
+     * @param array $vars URL GET Parameters
+     * @param array $classes Classes to index
+     * @return array
+     */
+    protected function getClasses(array $vars, array $classes): array
+    {
+        if (isset($vars['class'])) {
+            return array_intersect($classes, [$vars['class']]);
+        }
+
+        return $classes;
+    }
+
+    /**
      * Set up the requirements for this task
      *
      * @param HTTPRequest $request Current request
