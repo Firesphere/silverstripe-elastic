@@ -2,12 +2,11 @@
 
 namespace Firesphere\ElasticSearch\Services;
 
-use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\ElasticSearch\Client;
+use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Exception\AuthenticationException;
 use Firesphere\ElasticSearch\Indexes\BaseIndex;
 use Firesphere\SearchBackend\Services\BaseService;
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
 
 class ElasticCoreService extends BaseService
@@ -26,9 +25,17 @@ class ElasticCoreService extends BaseService
     public function __construct()
     {
         $config = self::config()->get('config');
+        $endPoint0 = $config['endpoint'][0];
+        $uri = str_replace(['https://', 'http://'], '', $endPoint0['host']);
+        $uri = sprintf(
+            '%s://%s:%s',
+            $endPoint0['protocol'] ?? 'https',
+            $uri,
+            $endPoint0['port'] ?? 9200
+        );
         $this->client = ClientBuilder::create()
-            ->setHosts([$config['endpoint'][0]['host']])
-            ->setApiKey($config['endpoint'][0]['apiKey'])
+            ->setHosts([$uri])
+            ->setApiKey($endPoint0['apiKey'])
             ->build();
 //        $this->client = new Client($config['endpoint'][0]);
         parent::__construct(BaseIndex::class);
