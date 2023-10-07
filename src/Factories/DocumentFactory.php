@@ -6,13 +6,17 @@ use Exception;
 use Firesphere\ElasticSearch\Indexes\BaseIndex as ElasticBaseIndex;
 use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
 use Firesphere\SearchBackend\Factories\DocumentCoreFactory;
+use Firesphere\SearchBackend\Helpers\DataResolver;
 use Firesphere\SearchBackend\Helpers\FieldResolver;
+use Firesphere\SearchBackend\Helpers\Statics;
 use Firesphere\SearchBackend\Services\BaseService;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBDate;
+use SilverStripe\ORM\FieldType\DBField;
 
 /**
  * Class DocumentFactory
@@ -24,7 +28,6 @@ class DocumentFactory extends DocumentCoreFactory
 {
     use Configurable;
     use Extensible;
-    use DocumentFactoryTrait;
     /**
      * @var bool Debug this build
      */
@@ -118,7 +121,7 @@ class DocumentFactory extends DocumentCoreFactory
     /**
      * Add a single field to the Solr index
      *
-     * @param Document $doc Solr Document
+     * @param array $doc Elastic Document
      * @param DataObject $object Object whose field is to be added
      * @param array $options Additional options
      */
@@ -197,7 +200,7 @@ class DocumentFactory extends DocumentCoreFactory
     /**
      * Push field to a document
      *
-     * @param Document $doc Solr document
+     * @param array $doc Solr document
      * @param array $options Custom options
      * @param string $type Type of Solr field
      * @param DBField|string|null $value Value(s) of the field
@@ -212,29 +215,6 @@ class DocumentFactory extends DocumentCoreFactory
         $name = getShortFieldName($options['name']);
 
         $doc->addField($name, $value, $options['boost'], Document::MODIFIER_SET);
-    }
-
-    /**
-     * Are we debugging?
-     *
-     * @return bool
-     */
-    public function isDebug(): bool
-    {
-        return $this->debug;
-    }
-
-    /**
-     * Set to true if debugging should be enabled
-     *
-     * @param bool $debug
-     * @return DocumentFactory
-     */
-    public function setDebug(bool $debug): DocumentFactory
-    {
-        $this->debug = $debug;
-
-        return $this;
     }
 
     /**

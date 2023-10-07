@@ -7,7 +7,7 @@ use Firesphere\ElasticSearch\Indexes\BaseIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Helpers\IndexingHelper;
 use Firesphere\SearchBackend\States\SiteState;
-use Firesphere\SearchBackend\Traits\IndexingTrait;
+use Firesphere\SearchBackend\Traits\IndexingTraits\IndexingTrait;
 use HttpException;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
