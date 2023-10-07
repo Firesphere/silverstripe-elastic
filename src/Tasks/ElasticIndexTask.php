@@ -2,17 +2,27 @@
 
 namespace Firesphere\ElasticSearch\Tasks;
 
+use Exception;
 use Firesphere\ElasticSearch\Indexes\BaseIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
+use Firesphere\SearchBackend\Helpers\IndexingHelper;
+use Firesphere\SearchBackend\States\SiteState;
+use Firesphere\SearchBackend\Traits\IndexingTrait;
+use HttpException;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\SS_List;
+use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
 
 class ElasticIndexTask extends BuildTask
 {
+    use IndexingTrait;
     /**
      * URLSegment of this task
      *
@@ -77,6 +87,7 @@ class ElasticIndexTask extends BuildTask
     /**
      * @param HTTPRequest $request
      * @return int|void
+     * @throws HttpException
      * @throws NotFoundExceptionInterface
      */
     public function run($request)
@@ -124,23 +135,104 @@ class ElasticIndexTask extends BuildTask
     }
 
     /**
-     * Set up the requirements for this task
+     * Index a single class for a given index. {@link static::indexClassForIndex()}
      *
-     * @param HTTPRequest $request Current request
-     * @return array
+     * @param bool $isGroup Is a specific group indexed
+     * @param string $class Class to index
+     * @param int $group Group to index
+     * @return int|bool
+     * @throws HTTPException
+     * @throws ValidationException
      */
-    protected function taskSetup(HTTPRequest $request): array
+    private function indexClass(bool $isGroup, string $class, int $group)
     {
-        $vars = $request->getVars();
-        $debug = $this->isDebug() || isset($vars['debug']);
-        // Forcefully set the debugging to whatever the outcome of the above is
-        $this->setDebug($debug, true);
-        $group = $vars['group'] ?? 0;
-        $start = $vars['start'] ?? 0;
-        $group = ($start > $group) ? $start : $group;
-        $isGroup = isset($vars['group']);
+        $this->getLogger()->info(sprintf('Indexing %s for %s', $class, $this->getIndex()->getIndexName()));
+        [$totalGroups, $groups] = IndexingHelper::getGroupSettings($isGroup, $class, $group);
+        $this->getLogger()->info(sprintf('Total groups %s', $totalGroups));
+        do {
+            try {
+                if ($this->hasPCNTL()) {
+                    // @codeCoverageIgnoreStart
+                    $group = $this->spawnChildren($class, $group, $groups);
+                    // @codeCoverageIgnoreEnd
+                } else {
+                    $this->doReindex($group, $class);
+                }
+                $group++;
+            } catch (Exception $error) {
+                // @codeCoverageIgnoreStart
+                $this->logException($this->index->getIndexName(), $group, $error);
+                continue;
+                // @codeCoverageIgnoreEnd
+            }
+        } while ($group <= $groups);
 
-        return [$vars, $group, $isGroup];
+        return $totalGroups;
+    }
+
+
+    /**
+     * Reindex the given group, for each state
+     *
+     * @param int $group Group to index
+     * @param string $class Class to index
+     * @param bool|int $pid Are we a child process or not
+     * @throws Exception
+     */
+    private function doReindex(int $group, string $class, $pid = false)
+    {
+        $start = time();
+        $states = SiteState::getStates();
+        foreach ($states as $state) {
+            if ($state !== SiteState::DEFAULT_STATE && !empty($state)) {
+                SiteState::withState($state);
+            }
+            $this->indexStateClass($group, $class);
+        }
+
+        SiteState::withState(SiteState::DEFAULT_STATE);
+        $end = gmdate('i:s', time() - $start);
+        $this->getLogger()->info(sprintf('Indexed group %s in %s', $group, $end));
+
+        // @codeCoverageIgnoreStart
+        if ($pid !== false) {
+            exit(0);
+        }
+        // @codeCoverageIgnoreEnd
+    }
+
+
+    /**
+     * Index a group of a class for a specific state and index
+     *
+     * @param string $group Group to index
+     * @param string $class Class to index
+     * @throws Exception
+     */
+    private function indexStateClass(string $group, string $class): void
+    {
+        // Generate filtered list of local records
+        $baseClass = DataObject::getSchema()->baseDataClass($class);
+        /** @var DataList|DataObject[] $items */
+        $items = DataObject::get($baseClass)
+            ->sort('ID ASC')
+            ->limit($this->getBatchLength(), ($group * $this->getBatchLength()));
+        if ($items->count()) {
+            $this->updateIndex($items);
+        }
+    }
+
+
+    /**
+     * Execute the update on the client
+     *
+     * @param SS_List $items Items to index
+     * @throws Exception
+     */
+    private function updateIndex($items): void
+    {
+        $index = $this->getIndex();
+        $this->service->updateIndex($index, $items);
     }
 
     /**
@@ -200,7 +292,7 @@ class ElasticIndexTask extends BuildTask
     }
 
     /**
-     * @return mixed
+     * @return BaseIndex
      */
     public function getIndex()
     {

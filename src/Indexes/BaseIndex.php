@@ -3,7 +3,7 @@
 namespace Firesphere\ElasticSearch\Indexes;
 
 use Elastic\EnterpriseSearch\Client;
-use Firesphere\ElasticSearch\Queries\BaseQuery;
+use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\ElasticSearch\Traits\IndexTraits\BaseIndexTrait;
 use SilverStripe\Core\Config\Configurable;
@@ -16,11 +16,6 @@ abstract class BaseIndex
     use Configurable;
     use Injectable;
     use BaseIndexTrait;
-
-    /**
-     * @var Client Comms client
-     */
-    protected $client;
 
     /**
      * @var array
@@ -38,10 +33,10 @@ abstract class BaseIndex
     }
 
     /**
-     * @param BaseQuery $query
+     * @param ElasticQuery $query
      * @return void
      */
-    public function doSearch(BaseQuery $query)
+    public function doSearch(ElasticQuery $query)
     {
         $this->clientQuery = $this->buildElasticQuery($query);
 
@@ -52,7 +47,7 @@ abstract class BaseIndex
         return $response['hits'];
     }
 
-    public function buildElasticQuery(BaseQuery $query)
+    public function buildElasticQuery(ElasticQuery $query)
     {
         $search = [];
         $search['index'] = $this->getIndexName();

@@ -50,4 +50,9 @@ class ElasticCoreService extends BaseService
     {
         $this->client = $client;
     }
+
+    public function updateIndex($index, $items)
+    {
+        // @todo get the document factory in play here
+    }
 }
