@@ -4,8 +4,11 @@ namespace Firesphere\ElasticSearch\Factories;
 
 use Exception;
 use Firesphere\ElasticSearch\Indexes\BaseIndex as ElasticBaseIndex;
+use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
 use Firesphere\SearchBackend\Factories\DocumentCoreFactory;
 use Firesphere\SearchBackend\Helpers\FieldResolver;
+use Firesphere\SearchBackend\Services\BaseService;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injector;
@@ -21,7 +24,7 @@ class DocumentFactory extends DocumentCoreFactory
 {
     use Configurable;
     use Extensible;
-//    use DocumentFactoryTrait;
+    use DocumentFactoryTrait;
     /**
      * @var bool Debug this build
      */
@@ -74,20 +77,20 @@ class DocumentFactory extends DocumentCoreFactory
      * Add fields that should always be included
      *
      * @param array $doc Elastic Document
-     * @param DataObject $item Item to get the data from
+     * @param DataObject|DataObjectSearchExtension $item Item to get the data from
      */
-    protected function addDefaultFields(array $doc, DataObject $item)
+    protected function addDefaultFields($doc, $item)
     {
-        $doc->setKey(SolrCoreService::ID_FIELD, $item->ClassName . '-' . $item->ID);
-        $doc->addField(SolrCoreService::CLASS_ID_FIELD, $item->ID);
-        $doc->addField('ClassName', $item->ClassName);
+        $doc[BaseService::ID_FIELD] = $item->ClassName . '-' . $item->ID;
+        $doc[BaseService::CLASS_ID_FIELD] = $item->ID;
+        $doc['ClassName'] = $item->ClassName;
         $hierarchy = ClassInfo::ancestry($item);
         $classHierarchy = [];
         foreach ($hierarchy as $lower => $camel) {
             $classHierarchy[] = $camel;
         }
-        $doc->addField('ClassHierarchy', $classHierarchy);
-        $doc->addField('ViewStatus', $item->getViewStatus());
+        $doc['ClassHierarchy'] = $classHierarchy;
+        $doc['ViewStatus'] = $item->getViewStatus();
         $this->extend('updateDefaultFields', $doc, $item);
     }
 
