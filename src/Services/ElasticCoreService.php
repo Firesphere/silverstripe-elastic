@@ -6,8 +6,11 @@ use Elastic\ElasticSearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Exception\AuthenticationException;
 use Firesphere\ElasticSearch\Indexes\BaseIndex;
+use Firesphere\SearchBackend\Factories\DocumentFactory;
 use Firesphere\SearchBackend\Services\BaseService;
+use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injector;
 
 class ElasticCoreService extends BaseService
 {
@@ -37,7 +40,6 @@ class ElasticCoreService extends BaseService
             ->setHosts([$uri])
             ->setApiKey($endPoint0['apiKey'])
             ->build();
-//        $this->client = new Client($config['endpoint'][0]);
         parent::__construct(BaseIndex::class);
     }
 
@@ -51,8 +53,35 @@ class ElasticCoreService extends BaseService
         $this->client = $client;
     }
 
-    public function updateIndex($index, $items)
+    /**
+     * @throws NotFoundExceptionInterface
+     */
+    public function updateIndex($index, $items, $update)
     {
-        // @todo get the document factory in play here
+        $fields = $index->getFieldsForIndexing();
+        $factory = $this->getFactory($items);
+        $docs = $factory->buildItems($fields, $index, $update);
+        if (count($docs)) {
+            $update->addDocuments($docs);
+        }
     }
+
+
+    /**
+     * Get the document factory prepared
+     *
+     * @param SS_List $items
+     * @return DocumentFactory
+     * @throws NotFoundExceptionInterface
+     */
+    protected function getFactory($items): DocumentFactory
+    {
+        $factory = Injector::inst()->get(DocumentFactory::class);
+        $factory->setItems($items);
+        $factory->setClass($items->first()->ClassName);
+        $factory->setDebug(true);
+
+        return $factory;
+    }
+
 }
