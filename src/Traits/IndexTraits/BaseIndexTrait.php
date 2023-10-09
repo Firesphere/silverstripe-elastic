@@ -332,4 +332,14 @@ trait BaseIndexTrait
 
         return $this;
     }
+
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
+    public function setClient(Client $client): void
+    {
+        $this->client = $client;
+    }
 }
