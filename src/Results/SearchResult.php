@@ -147,6 +147,23 @@ class SearchResult extends ViewableData implements SearchResultInterface
         return ArrayList::create($items)->limit($this->query->getRows());
     }
 
+
+    /**
+     * Elastic is better off using the add method, as the highlights don't come in a
+     * single bulk
+     *
+     * @param stdClass $highlight The highlights
+     * @param string $docId The *Elastic* returned document ID
+     * @return SearchResultInterface
+     */
+    protected function addHighlight($highlight, $docId): SearchResultInterface
+    {
+        $this->highlight[$docId][] = (array)$highlight;
+
+        return $this;
+    }
+
+
     /**
      * Set the matches from Solarium as an ArrayList
      *
