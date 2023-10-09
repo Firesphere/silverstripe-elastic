@@ -2,10 +2,13 @@
 
 namespace Firesphere\ElasticSearch\Indexes;
 
+use Elastic\Elasticsearch\Exception\ClientResponseException;
+use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\ElasticSearch\Traits\IndexTraits\BaseIndexTrait;
 use Firesphere\SearchBackend\Indexes\CoreIndex;
+use Firesphere\SearchBackend\Results\SearchResult;
 use LogicException;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
@@ -113,7 +116,9 @@ abstract class BaseIndex extends CoreIndex
 
     /**
      * @param ElasticQuery $query
-     * @return void
+     * @return SearchResult
+     * @throws ClientResponseException
+     * @throws ServerResponseException
      */
     public function doSearch(ElasticQuery $query)
     {
