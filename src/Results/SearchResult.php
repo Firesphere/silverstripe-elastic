@@ -53,10 +53,6 @@ class SearchResult extends ViewableData implements SearchResultInterface
         $this->index = $index;
         $this->query = $query;
         $result = $result->asObject();
-//        $this->setMatches($result->getDocuments())
-//            ->setFacets($result->getFacetSet())
-//            ->setHighlight($result->getHighlighting())
-//            ->setTotalItems($result->getNumFound());
 //        if ($query->hasSpellcheck()) {
 //            $this->setSpellcheck($result->getSpellcheck())
 //                ->setCollatedSpellcheck($result->getSpellcheck());
@@ -160,13 +156,15 @@ class SearchResult extends ViewableData implements SearchResultInterface
     protected function setMatches($result): self
     {
         $data = [];
-        /** @var Document $item */
+        /** @var stdClass $item */
         foreach ($result as $item) {
-            $data[] = ArrayData::create($item->_source);
+            $data[] = ArrayData::create($item);
+            if ($item->highlight) {
+                $this->addHighlight($item->highlight, $item->_id);
+            }
         }
 
-        $docs = ArrayList::create($data);
-        $this->matches = $docs;
+        $this->matches = ArrayList::create($data);
 
         return $this;
     }
@@ -184,7 +182,10 @@ class SearchResult extends ViewableData implements SearchResultInterface
         if (!$match instanceof DataObject) {
             $class = $match->ClassName;
             /** @var DataObject $match */
-            $match = $class::get()->byID($match->{$classIDField});
+            $match = $class::get()->byID($match->_source->{$classIDField});
+            if ($match && $match->exists()) {
+                $match->__set('elasticId', $match->_id);
+            }
         }
 
         return ($match && $match->exists()) ? $match : false;
@@ -219,9 +220,9 @@ class SearchResult extends ViewableData implements SearchResultInterface
     {
         $highlights = [];
         if ($this->highlight && $docID) {
-            $highlights = [];
-            foreach ($this->highlight->getResult($docID) as $field => $highlight) {
-                $highlights[] = implode(' (...) ', $highlight);
+            $highlight = (array)$this->highlight[$docID];
+            foreach ($highlight as $field => $fieldHighlight) {
+                $highlights[] = implode(' (...) ', $fieldHighlight);
             }
         }
 
