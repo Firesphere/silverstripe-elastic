@@ -5,12 +5,16 @@ namespace Firesphere\ElasticSearch\Services;
 use Elastic\ElasticSearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Exception\AuthenticationException;
+use Elastic\Elasticsearch\Exception\ClientResponseException;
+use Elastic\Elasticsearch\Exception\ServerResponseException;
+use Firesphere\ElasticSearch\Factories\DocumentFactory;
 use Firesphere\ElasticSearch\Indexes\BaseIndex;
-use Firesphere\SearchBackend\Factories\DocumentFactory;
 use Firesphere\SearchBackend\Services\BaseService;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionException;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\SS_List;
 
 class ElasticCoreService extends BaseService
 {
@@ -22,7 +26,7 @@ class ElasticCoreService extends BaseService
     protected $client;
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws AuthenticationException
      */
     public function __construct()
@@ -54,15 +58,34 @@ class ElasticCoreService extends BaseService
     }
 
     /**
+     * @param BaseIndex $index
+     * @param SS_List $items
      * @throws NotFoundExceptionInterface
+     * @throws ClientResponseException
+     * @throws ServerResponseException
      */
-    public function updateIndex($index, $items, $update)
+    public function updateIndex($index, $items)
     {
         $fields = $index->getFieldsForIndexing();
         $factory = $this->getFactory($items);
-        $docs = $factory->buildItems($fields, $index, $update);
+        $docs = $factory->buildItems($fields, $index);
         if (count($docs)) {
-            $update->addDocuments($docs);
+            $body = [
+                'pipeline' => 'ent-search-generic-ingestion',
+                'body'     => []
+            ];
+            foreach ($docs as $doc) {
+                $body['body'][] = [
+                    'index' => [
+                        '_index' => $index->getIndexName(),
+                    ]
+                ];
+                $doc['_extract_binary_content'] = true;
+                $doc['_reduce_whitespace'] = true;
+                $doc['_run_ml_inference'] = false;
+                $body['body'][] = $doc;
+            }
+            $this->client->bulk($body);
         }
     }
 
@@ -85,3 +108,99 @@ class ElasticCoreService extends BaseService
     }
 
 }
+
+$params = [
+    'pipeline' => 'ent-search-generic-ingestion',
+    'body'     => [
+        [
+            'index' => [
+                '_index' => 'search-stickerindex',
+                '_id'    => '9780553351927',
+            ],
+        ],
+        [
+            'name'                    => 'Snow Crash',
+            'author'                  => 'Neal Stephenson',
+            'release_date'            => '1992-06-01',
+            'page_count'              => 470,
+            '_extract_binary_content' => true,
+            '_reduce_whitespace'      => true,
+            '_run_ml_inference'       => false,
+        ],
+        [
+            'index' => [
+                '_index' => 'search-stickerindex',
+                '_id'    => '9780441017225',
+            ],
+        ],
+        [
+            'name'                    => 'Revelation Space',
+            'author'                  => 'Alastair Reynolds',
+            'release_date'            => '2000-03-15',
+            'page_count'              => 585,
+            '_extract_binary_content' => true,
+            '_reduce_whitespace'      => true,
+            '_run_ml_inference'       => false,
+        ],
+        [
+            'index' => [
+                '_index' => 'search-stickerindex',
+                '_id'    => '9780451524935',
+            ],
+        ],
+        [
+            'name'                    => '1984',
+            'author'                  => 'George Orwell',
+            'release_date'            => '1985-06-01',
+            'page_count'              => 328,
+            '_extract_binary_content' => true,
+            '_reduce_whitespace'      => true,
+            '_run_ml_inference'       => false,
+        ],
+        [
+            'index' => [
+                '_index' => 'search-stickerindex',
+                '_id'    => '9781451673319',
+            ],
+        ],
+        [
+            'name'                    => 'Fahrenheit 451',
+            'author'                  => 'Ray Bradbury',
+            'release_date'            => '1953-10-15',
+            'page_count'              => 227,
+            '_extract_binary_content' => true,
+            '_reduce_whitespace'      => true,
+            '_run_ml_inference'       => false,
+        ],
+        [
+            'index' => [
+                '_index' => 'search-stickerindex',
+                '_id'    => '9780060850524',
+            ],
+        ],
+        [
+            'name'                    => 'Brave New World',
+            'author'                  => 'Aldous Huxley',
+            'release_date'            => '1932-06-01',
+            'page_count'              => 268,
+            '_extract_binary_content' => true,
+            '_reduce_whitespace'      => true,
+            '_run_ml_inference'       => false,
+        ],
+        [
+            'index' => [
+                '_index' => 'search-stickerindex',
+                '_id'    => '9780385490818',
+            ],
+        ],
+        [
+            'name'                    => 'The Handmaid\'s Tale',
+            'author'                  => 'Margaret Atwood',
+            'release_date'            => '1985-06-01',
+            'page_count'              => 311,
+            '_extract_binary_content' => true,
+            '_reduce_whitespace'      => true,
+            '_run_ml_inference'       => false,
+        ],
+    ],
+];

@@ -2,6 +2,7 @@
 
 namespace Firesphere\ElasticSearch\Tasks;
 
+use Elastic\Elasticsearch\Exception\HttpClientException;
 use Exception;
 use Firesphere\ElasticSearch\Indexes\BaseIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
@@ -40,13 +41,13 @@ class ElasticIndexTask extends BuildTask
      *
      * @var string
      */
-    protected $title = 'Solr Index update';
+    protected $title = 'Elastic Index update';
     /**
      * What do I do?
      *
      * @var string
      */
-    protected $description = 'Add or update documents to an existing Solr core.';
+    protected $description = 'Add or update documents to an existing Elastic core.';
 
     /**
      * @var ElasticCoreService
@@ -89,6 +90,7 @@ class ElasticIndexTask extends BuildTask
      * @return int|void
      * @throws HttpException
      * @throws NotFoundExceptionInterface
+     * @throws HttpClientException
      */
     public function run($request)
     {
@@ -161,7 +163,7 @@ class ElasticIndexTask extends BuildTask
                 $group++;
             } catch (Exception $error) {
                 // @codeCoverageIgnoreStart
-                $this->logException($this->index->getIndexName(), $group, $error);
+                $this->getLogger()->critical($error);
                 continue;
                 // @codeCoverageIgnoreEnd
             }
@@ -213,10 +215,11 @@ class ElasticIndexTask extends BuildTask
     {
         // Generate filtered list of local records
         $baseClass = DataObject::getSchema()->baseDataClass($class);
+        $batchLength = IndexingHelper::getBatchLength();
         /** @var DataList|DataObject[] $items */
         $items = DataObject::get($baseClass)
             ->sort('ID ASC')
-            ->limit($this->getBatchLength(), ($group * $this->getBatchLength()));
+            ->limit($batchLength, ($group * $batchLength));
         if ($items->count()) {
             $this->updateIndex($items);
         }
@@ -228,6 +231,7 @@ class ElasticIndexTask extends BuildTask
      *
      * @param SS_List $items Items to index
      * @throws Exception
+     * @throws NotFoundExceptionInterface
      */
     private function updateIndex($items): void
     {
@@ -269,7 +273,7 @@ class ElasticIndexTask extends BuildTask
 
     public function isDebug(): bool
     {
-        return $this->debug;
+        return $this->debug ?? false;
     }
 
     /**

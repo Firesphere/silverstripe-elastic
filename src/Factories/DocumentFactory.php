@@ -14,6 +14,7 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\ORM\FieldType\DBField;
@@ -35,13 +36,6 @@ class DocumentFactory extends DocumentCoreFactory
 
     protected $fieldResolver;
 
-    /**
-     * DocumentFactory constructor, sets up the field resolver
-     */
-    public function __construct()
-    {
-        $this->fieldResolver = Injector::inst()->get(FieldResolver::class);
-    }
 
     /**
      * Note, it can only take one type of class at a time!
@@ -61,14 +55,15 @@ class DocumentFactory extends DocumentCoreFactory
             $this->indexGroupMessage($index);
         }
 
+        /** @var DataList|DataObject[] $item */
         foreach ($this->getItems() as $item) {
             // Don't index items that should not show in search explicitly.
             // Just a "not" is insufficient, as it could be null or false (both meaning, not set)
             if ($item->ShowInSearch === 0) {
                 continue;
             }
-            /** @var array $doc */
-            $doc = $this->createDocument();
+            $doc = $this->addDefaultFields([], $item);
+            $doc = $this->buildFields($fields, $doc, $item);
 
             $docs[] = $doc;
         }
@@ -86,6 +81,8 @@ class DocumentFactory extends DocumentCoreFactory
     {
         $doc[BaseService::ID_FIELD] = $item->ClassName . '-' . $item->ID;
         $doc[BaseService::CLASS_ID_FIELD] = $item->ID;
+        // Set a known ID, with field name _id, for Elastic
+        $doc['_id'] = $doc[BaseService::ID_FIELD];
         $doc['ClassName'] = $item->ClassName;
         $hierarchy = ClassInfo::ancestry($item);
         $classHierarchy = [];
@@ -95,18 +92,19 @@ class DocumentFactory extends DocumentCoreFactory
         $doc['ClassHierarchy'] = $classHierarchy;
         $doc['ViewStatus'] = $item->getViewStatus();
         $this->extend('updateDefaultFields', $doc, $item);
+
+        return $doc;
     }
 
     /**
      * Create the required record for a field
      *
      * @param array $fields Fields to build a record for
-     * @param Document $doc Document for Solr
+     * @param array $doc Document for Elastic
      * @param DataObject $item Object to get the data for
-     * @param array $boostFields Custom set of index-time-boosted fields
      * @throws Exception
      */
-    protected function buildFields($fields, Document $doc, DataObject $item, array $boostFields): void
+    protected function buildFields($fields, array $doc, DataObject $item): array //, array $boostFields): void
     {
         foreach ($fields as $field) {
             $fieldData = $this->getFieldResolver()->resolveField($field);
@@ -116,6 +114,8 @@ class DocumentFactory extends DocumentCoreFactory
                 $this->addField($doc, $item, $options);
             }
         }
+
+        return $doc;
     }
 
     /**
@@ -125,7 +125,7 @@ class DocumentFactory extends DocumentCoreFactory
      * @param DataObject $object Object whose field is to be added
      * @param array $options Additional options
      */
-    protected function addField($doc, $object, $options): void
+    protected function addField(&$doc, $object, $options): void
     {
         if (!$this->classIs($object, $options['origin'])) {
             return;
@@ -135,12 +135,9 @@ class DocumentFactory extends DocumentCoreFactory
 
         $valuesForField = $this->getValuesForField($object, $options);
 
-        $typeMap = Statics::getTypeMap();
-        $type = $typeMap[$options['type']] ?? $typeMap['*'];
-
         foreach ($valuesForField as $value) {
             $this->extend('onBeforeAddDoc', $options, $value);
-            $this->addToDoc($doc, $options, $type, $value);
+            $this->addToDoc($doc, $options, $value);
         }
     }
 
@@ -202,19 +199,18 @@ class DocumentFactory extends DocumentCoreFactory
      *
      * @param array $doc Solr document
      * @param array $options Custom options
-     * @param string $type Type of Solr field
      * @param DBField|string|null $value Value(s) of the field
      */
-    protected function addToDoc($doc, $options, $type, $value): void
+    protected function addToDoc(&$doc, $options, $value): void
     {
         /* Solr requires dates in the form 1995-12-31T23:59:59Z, so we need to normalize to GMT */
-        if (($value && $type === 'tdate') || $value instanceof DBDate) {
+        if ($value instanceof DBDate) {
             $value = gmdate('Y-m-d\TH:i:s\Z', strtotime($value));
         }
 
         $name = getShortFieldName($options['name']);
 
-        $doc->addField($name, $value, $options['boost'], Document::MODIFIER_SET);
+        $doc[$name] = $value;//, $options['boost'], Document::MODIFIER_SET);
     }
 
     /**
