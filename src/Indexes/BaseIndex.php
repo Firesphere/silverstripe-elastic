@@ -131,17 +131,20 @@ abstract class BaseIndex extends CoreIndex
 
         $result = new SearchResult($result, $query, $this);
 
-        return $result; ;
+        return $result;
     }
 
     public function buildElasticQuery(ElasticQuery $query)
     {
+        // Not pretty, but it works for now
         $query->addFilter('ViewStatus', $this->getViewStatusFilter());
         $q = $query->getFiltersForMatch();
         // Always primarily search against the _text field, that's where all content is
         $q[]['match'] = ['_text' => $query->getTerms()[0]['text']];
         $search = [
             'index' => $this->getIndexName(),
+            'from'  => $query->getStart(),
+            'size'  => $query->getRows(),
             'body'  => [
                 'query' => [
                     'bool' => [
