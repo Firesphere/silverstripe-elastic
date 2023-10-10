@@ -9,6 +9,7 @@ use Firesphere\ElasticSearch\Results\SearchResult;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\ElasticSearch\Traits\IndexTraits\BaseIndexTrait;
 use Firesphere\SearchBackend\Indexes\CoreIndex;
+use Firesphere\SearchBackend\Traits\QueryTraits\QueryFilterTrait;
 use LogicException;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
@@ -20,6 +21,8 @@ abstract class BaseIndex extends CoreIndex
     use Extensible;
     use Configurable;
     use Injectable;
+    use QueryFilterTrait;
+    use BaseIndexTrait;
 
     /**
      * @var array
@@ -128,14 +131,25 @@ abstract class BaseIndex extends CoreIndex
 
         $result = new SearchResult($result, $query, $this);
 
-        return $result; // $response['hits'];
+        return $result; ;
     }
 
     public function buildElasticQuery(ElasticQuery $query)
     {
-        $search = [];
-        $search['index'] = $this->getIndexName();
-        $search['q'] = $query->getTerms()[0]['text'];
+        $query->addFilter('ViewStatus', $this->getViewStatusFilter());
+        $q = $query->getFiltersForMatch();
+        // Always primarily search against the _text field, that's where all content is
+        $q[]['match'] = ['_text' => $query->getTerms()[0]['text']];
+        $search = [
+            'index' => $this->getIndexName(),
+            'body'  => [
+                'query' => [
+                    'bool' => [
+                        'must' => $q
+                    ]
+                ]
+            ]
+        ];
 
         return $search;
     }

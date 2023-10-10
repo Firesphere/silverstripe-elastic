@@ -29,6 +29,7 @@ class DocumentFactory extends DocumentCoreFactory
 {
     use Configurable;
     use Extensible;
+
     /**
      * @var bool Debug this build
      */
@@ -62,8 +63,10 @@ class DocumentFactory extends DocumentCoreFactory
             if ($item->ShowInSearch === 0) {
                 continue;
             }
-            $doc = $this->addDefaultFields([], $item);
+            $doc = [];
             $doc = $this->buildFields($fields, $doc, $item);
+            $doc['_text'] = $this->recursiveImplode($doc);
+            $doc = $this->addDefaultFields($doc, $item);
 
             $docs[] = $doc;
         }
@@ -72,28 +75,19 @@ class DocumentFactory extends DocumentCoreFactory
     }
 
     /**
-     * Add fields that should always be included
-     *
-     * @param array $doc Elastic Document
-     * @param DataObject|DataObjectSearchExtension $item Item to get the data from
+     * @return mixed|object|Injector
      */
-    protected function addDefaultFields($doc, $item)
+    public function getFieldResolver(): mixed
     {
-        $doc[BaseService::ID_FIELD] = $item->ClassName . '-' . $item->ID;
-        $doc[BaseService::CLASS_ID_FIELD] = $item->ID;
-        // Set a known ID, with field name _id, for Elastic
-        $doc['_id'] = $doc[BaseService::ID_FIELD];
-        $doc['ClassName'] = $item->ClassName;
-        $hierarchy = ClassInfo::ancestry($item);
-        $classHierarchy = [];
-        foreach ($hierarchy as $lower => $camel) {
-            $classHierarchy[] = $camel;
-        }
-        $doc['ClassHierarchy'] = $classHierarchy;
-        $doc['ViewStatus'] = $item->getViewStatus();
-        $this->extend('updateDefaultFields', $doc, $item);
+        return $this->fieldResolver;
+    }
 
-        return $doc;
+    /**
+     * @param mixed|object|Injector $fieldResolver
+     */
+    public function setFieldResolver(mixed $fieldResolver): void
+    {
+        $this->fieldResolver = $fieldResolver;
     }
 
     /**
@@ -213,19 +207,41 @@ class DocumentFactory extends DocumentCoreFactory
         $doc[$name] = $value;//, $options['boost'], Document::MODIFIER_SET);
     }
 
-    /**
-     * @return mixed|object|Injector
-     */
-    public function getFieldResolver(): mixed
+    protected function recursiveImplode($arr)
     {
-        return $this->fieldResolver;
+        $return = [];
+        foreach ($arr as $key => $value) {
+            if (is_array($value)) {
+                $return[] = $this->recursiveImplode($value);
+            } else {
+                $return[] = $value;
+            }
+        }
+
+        return implode(', ', $return);
     }
 
     /**
-     * @param mixed|object|Injector $fieldResolver
+     * Add fields that should always be included
+     *
+     * @param array $doc Elastic Document
+     * @param DataObject|DataObjectSearchExtension $item Item to get the data from
      */
-    public function setFieldResolver(mixed $fieldResolver): void
+    protected function addDefaultFields($doc, $item)
     {
-        $this->fieldResolver = $fieldResolver;
+        $doc[BaseService::ID_FIELD] = $item->ClassName . '-' . $item->ID;
+        $doc[BaseService::CLASS_ID_FIELD] = $item->ID;
+        // Set a known ID, with field name _id, for Elastic
+        $doc['ClassName'] = $item->ClassName;
+        $hierarchy = ClassInfo::ancestry($item);
+        $classHierarchy = [];
+        foreach ($hierarchy as $lower => $camel) {
+            $classHierarchy[] = $camel;
+        }
+        $doc['ClassHierarchy'] = $classHierarchy;
+        $doc['ViewStatus'] = $item->getViewStatus();
+        $this->extend('updateDefaultFields', $doc, $item);
+
+        return $doc;
     }
 }

@@ -176,7 +176,7 @@ class SearchResult extends ViewableData implements SearchResultInterface
         /** @var stdClass $item */
         foreach ($result as $item) {
             $data[] = ArrayData::create($item);
-            if ($item->highlight) {
+            if (!empty($item->highlight)) {
                 $this->addHighlight($item->highlight, $item->_id);
             }
         }
@@ -197,7 +197,7 @@ class SearchResult extends ViewableData implements SearchResultInterface
     protected function asDataobject($match, string $classIDField)
     {
         if (!$match instanceof DataObject) {
-            $class = $match->ClassName;
+            $class = $match->_source->ClassName;
             /** @var DataObject $match */
             $match = $class::get()->byID($match->_source->{$classIDField});
             if ($match && $match->exists()) {
