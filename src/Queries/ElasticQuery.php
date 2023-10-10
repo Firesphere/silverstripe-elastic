@@ -2,7 +2,6 @@
 
 namespace Firesphere\ElasticSearch\Queries;
 
-use Firesphere\ElasticSearch\Traits\IndexTraits\BaseIndexTrait;
 use Firesphere\SearchBackend\Queries\BaseQuery;
 use SilverStripe\Core\Injector\Injectable;
 
