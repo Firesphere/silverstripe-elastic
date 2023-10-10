@@ -7,16 +7,20 @@ use Elastic\Elasticsearch\Response\Elasticsearch;
 use Firesphere\ElasticSearch\Indexes\BaseIndex;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use Firesphere\SearchBackend\Interfaces\SearchResultInterface;
+use Firesphere\SearchBackend\Services\BaseService;
 use Firesphere\SearchBackend\Traits\SearchResultGetTrait;
 use Firesphere\SearchBackend\Traits\SearchResultSetTrait;
+use SilverStripe\Control\Controller;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\PaginatedList;
+use SilverStripe\View\ArrayData;
 use SilverStripe\View\ViewableData;
 use stdClass;
 
-class SearchResults extends ViewableData implements SearchResultInterface
+class SearchResult extends ViewableData implements SearchResultInterface
 {
     use SearchResultGetTrait;
     use SearchResultSetTrait;
@@ -49,93 +53,12 @@ class SearchResults extends ViewableData implements SearchResultInterface
         $this->index = $index;
         $this->query = $query;
         $result = $result->asObject();
-//        $this->setMatches($result->getDocuments())
-//            ->setFacets($result->getFacetSet())
-//            ->setHighlight($result->getHighlighting())
-//            ->setTotalItems($result->getNumFound());
 //        if ($query->hasSpellcheck()) {
 //            $this->setSpellcheck($result->getSpellcheck())
 //                ->setCollatedSpellcheck($result->getSpellcheck());
 //        }
-    }
-
-    /**
-     * Set the facets to build
-     *
-     * @param FacetSet|null $facets
-     * @return $this
-     */
-    protected function setFacets($facets): self
-    {
-        $this->facets = $this->buildFacets($facets);
-
-        return $this;
-    }
-
-    /**
-     * Build the given list of key-value pairs in to a SilverStripe useable array
-     *
-     * @param FacetSet|null $facets
-     * @return ArrayData
-     */
-    protected function buildFacets($facets): ArrayData
-    {
-        $facetArray = [];
-        if ($facets) {
-            $facetTypes = $this->index->getFacetFields();
-            // Loop all available facet fields by type
-            foreach ($facetTypes as $class => $options) {
-                $facetArray = $this->createFacet($facets, $options, $class, $facetArray);
-            }
-        }
-
-        // Return an ArrayList of the results
-        return ArrayData::create($facetArray);
-    }
-
-    /**
-     * Create facets from each faceted class
-     *
-     * @param FacetSet $facets
-     * @param array $options
-     * @param string $class
-     * @param array $facetArray
-     * @return array
-     */
-    protected function createFacet($facets, $options, $class, array $facetArray): array
-    {
-        // Get the facets by its title
-        /** @var Field $typeFacets */
-        $typeFacets = $facets->getFacet('facet-' . $options['Title']);
-        $values = $typeFacets->getValues();
-        $results = ArrayList::create();
-        // If there are values, get the items one by one and push them in to the list
-        if (count($values)) {
-            $this->getClassFacets($class, $values, $results);
-        }
-        // Put the results in to the array
-        $facetArray[$options['Title']] = $results;
-
-        return $facetArray;
-    }
-
-    /**
-     * Get the facets for each class and their count
-     *
-     * @param $class
-     * @param array $values
-     * @param ArrayList $results
-     */
-    protected function getClassFacets($class, array $values, &$results): void
-    {
-        $items = $class::get()->byIds(array_keys($values));
-        foreach ($items as $item) {
-            // Set the FacetCount value to be sorted on later
-            $item->FacetCount = $values[$item->ID];
-            $results->push($item);
-        }
-        // Sort the results by FacetCount
-        $results = $results->sort(['FacetCount' => 'DESC', 'Title' => 'ASC',]);
+        $this->setMatches($result->hits->hits)
+            ->setTotalItems($result->hits->total->value);
     }
 
     /**
@@ -158,7 +81,7 @@ class SearchResults extends ViewableData implements SearchResultInterface
      * Set the spellcheck list as an ArrayList
      *
      * @param SpellcheckResult|null $spellcheck
-     * @return \Firesphere\ElasticSearch\Results\SearchResult
+     * @return SearchResult
      */
     public function setSpellcheck($spellcheck): self
     {
@@ -212,7 +135,7 @@ class SearchResults extends ViewableData implements SearchResultInterface
         $idField = BaseService::ID_FIELD;
         $classIDField = BaseService::CLASS_ID_FIELD;
         foreach ($matches as $match) {
-            $item = $this->isDataObject($match, $classIDField);
+            $item = $this->asDataobject($match, $classIDField);
             if ($item !== false) {
                 $this->createExcerpt($idField, $match, $item);
                 $items[] = $item;
@@ -224,39 +147,62 @@ class SearchResults extends ViewableData implements SearchResultInterface
         return ArrayList::create($items)->limit($this->query->getRows());
     }
 
+
+    /**
+     * Elastic is better off using the add method, as the highlights don't come in a
+     * single bulk
+     *
+     * @param stdClass $highlight The highlights
+     * @param string $docId The *Elastic* returned document ID
+     * @return SearchResultInterface
+     */
+    protected function addHighlight($highlight, $docId): SearchResultInterface
+    {
+        $this->highlight[$docId][] = (array)$highlight;
+
+        return $this;
+    }
+
+
     /**
      * Set the matches from Solarium as an ArrayList
      *
-     * @param array $result
+     * @param array|stdClass $result
      * @return $this
      */
     protected function setMatches($result): self
     {
         $data = [];
-        /** @var Document $item */
+        /** @var stdClass $item */
         foreach ($result as $item) {
-            $data[] = ArrayData::create($item->getFields());
+            $data[] = ArrayData::create($item);
+            if ($item->highlight) {
+                $this->addHighlight($item->highlight, $item->_id);
+            }
         }
 
-        $docs = ArrayList::create($data);
-        $this->matches = $docs;
+        $this->matches = ArrayList::create($data);
 
         return $this;
     }
 
     /**
      * Check if the match is a DataObject and exists
+     * And, if so, return the found DO.
      *
      * @param $match
      * @param string $classIDField
      * @return DataObject|bool
      */
-    protected function isDataObject($match, string $classIDField)
+    protected function asDataobject($match, string $classIDField)
     {
         if (!$match instanceof DataObject) {
             $class = $match->ClassName;
             /** @var DataObject $match */
-            $match = $class::get()->byID($match->{$classIDField});
+            $match = $class::get()->byID($match->_source->{$classIDField});
+            if ($match && $match->exists()) {
+                $match->__set('elasticId', $match->_id);
+            }
         }
 
         return ($match && $match->exists()) ? $match : false;
@@ -291,9 +237,9 @@ class SearchResults extends ViewableData implements SearchResultInterface
     {
         $highlights = [];
         if ($this->highlight && $docID) {
-            $highlights = [];
-            foreach ($this->highlight->getResult($docID) as $field => $highlight) {
-                $highlights[] = implode(' (...) ', $highlight);
+            $highlight = (array)$this->highlight[$docID];
+            foreach ($highlight as $field => $fieldHighlight) {
+                $highlights[] = implode(' (...) ', $fieldHighlight);
             }
         }
 

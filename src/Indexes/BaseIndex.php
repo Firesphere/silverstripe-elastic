@@ -5,10 +5,10 @@ namespace Firesphere\ElasticSearch\Indexes;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
+use Firesphere\ElasticSearch\Results\SearchResult;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\ElasticSearch\Traits\IndexTraits\BaseIndexTrait;
 use Firesphere\SearchBackend\Indexes\CoreIndex;
-use Firesphere\SearchBackend\Results\SearchResult;
 use LogicException;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
@@ -126,9 +126,9 @@ abstract class BaseIndex extends CoreIndex
 
         $result = $this->client->search($this->clientQuery);
 
-        $response = $result->asArray();
+        $result = new SearchResult($result, $query, $this);
 
-        return $response['hits'];
+        return $result; // $response['hits'];
     }
 
     public function buildElasticQuery(ElasticQuery $query)
