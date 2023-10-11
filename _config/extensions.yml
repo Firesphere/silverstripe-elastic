@@ -1,0 +1,3 @@
+Firesphere\SearchBackend\Models\SearchSynonym:
+  extensions:
+    - Firesphere\ElasticSearch\Extensions\ElasticSynonymExtension
