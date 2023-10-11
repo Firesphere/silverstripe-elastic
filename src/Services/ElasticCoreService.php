@@ -110,7 +110,6 @@ class ElasticCoreService extends BaseService
 
         return $factory;
     }
-
 }
 
 $params = [

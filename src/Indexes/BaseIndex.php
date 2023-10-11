@@ -149,5 +149,4 @@ abstract class BaseIndex extends CoreIndex
 
         return $this;
     }
-
 }

@@ -156,5 +156,4 @@ class ElasticQuery extends BaseQuery
     {
         $this->orFilters[$key] = $orFilters;
     }
-
 }

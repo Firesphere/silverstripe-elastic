@@ -2,7 +2,6 @@
 
 namespace Firesphere\ElasticSearch\Tasks;
 
-use Elastic\Elasticsearch\Endpoints\Synonyms;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\MissingParameterException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
@@ -11,11 +10,9 @@ use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Helpers\Synonyms as BaseSynonyms;
 use Firesphere\SearchBackend\Models\SearchSynonym;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\ORM\UniqueKey\UniqueKeyService;
 
 class ElasticConfigureSynonymsTask extends BuildTask
 {
-
     /**
      * @throws ClientResponseException
      * @throws ServerResponseException
@@ -30,7 +27,7 @@ class ElasticConfigureSynonymsTask extends BuildTask
         $configuredSynonyms = $this->transformBaseSynonyms($configuredSynonyms, '');
         // Note, the Elastic synonym class is not suitable for a bulk import
         $client->synonyms()->putSynonym([
-            'id' => SynonymSet::get()->first()->Key,
+            'id'   => SynonymSet::get()->first()->Key,
             'body' => ["synonyms_set" => array_merge($baseSynonyms, $configuredSynonyms)]
         ]);
     }

@@ -2,7 +2,6 @@
 
 namespace Firesphere\ElasticSearch\Models;
 
-use Firesphere\SearchBackend\Models\SearchSynonym;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\UniqueKey\UniqueKeyService;
@@ -15,7 +14,6 @@ use SilverStripe\ORM\UniqueKey\UniqueKeyService;
  */
 class SynonymSet extends DataObject
 {
-
     private static $table_name = 'SynonymSet';
 
     private static $db = [

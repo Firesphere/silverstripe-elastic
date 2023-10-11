@@ -24,6 +24,7 @@ use SilverStripe\Versioned\Versioned;
 class ElasticIndexTask extends BuildTask
 {
     use IndexingTrait;
+
     /**
      * URLSegment of this task
      *
@@ -111,13 +112,28 @@ class ElasticIndexTask extends BuildTask
 
             // Get the groups
             $groups = $this->indexClassForIndex($classes, $isGroup, $group);
-
         }
         $this->getLogger()->info(gmdate('Y-m-d H:i:s'));
         $time = gmdate('H:i:s', (time() - $start));
         $this->getLogger()->info(sprintf('Time taken: %s', $time));
 
         return $groups;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @param mixed $logger
+     */
+    public function setLogger($logger): void
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -134,6 +150,46 @@ class ElasticIndexTask extends BuildTask
         }
 
         return $classes;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getService()
+    {
+        return $this->service;
+    }
+
+    /**
+     * @param mixed $service
+     */
+    public function setService($service): void
+    {
+        $this->service = $service;
+    }
+
+    public function isDebug(): bool
+    {
+        return $this->debug ?? false;
+    }
+
+    /**
+     * Set the debug mode
+     *
+     * @param bool $debug Set the task in debug mode
+     * @param bool $force Force a task in debug mode, despite e.g. being Live and not CLI
+     * @return self
+     */
+    public function setDebug(bool $debug, bool $force = false): self
+    {
+        // Make the debug a configurable, forcing it to always be false from config
+        if (!$force && ElasticCoreService::config()->get('debug') === false) {
+            $debug = false;
+        }
+
+        $this->debug = $debug;
+
+        return $this;
     }
 
     /**
@@ -156,7 +212,7 @@ class ElasticIndexTask extends BuildTask
                 if ($this->hasPCNTL()) {
                     // @codeCoverageIgnoreStart
                     $group = $this->spawnChildren($class, $group, $groups);
-                    // @codeCoverageIgnoreEnd
+                // @codeCoverageIgnoreEnd
                 } else {
                     $this->doReindex($group, $class);
                 }
@@ -172,6 +228,21 @@ class ElasticIndexTask extends BuildTask
         return $totalGroups;
     }
 
+    /**
+     * @return BaseIndex
+     */
+    public function getIndex()
+    {
+        return $this->index;
+    }
+
+    /**
+     * @param mixed $index
+     */
+    public function setIndex($index): void
+    {
+        $this->index = $index;
+    }
 
     /**
      * Reindex the given group, for each state
@@ -203,7 +274,6 @@ class ElasticIndexTask extends BuildTask
         // @codeCoverageIgnoreEnd
     }
 
-
     /**
      * Index a group of a class for a specific state and index
      *
@@ -225,7 +295,6 @@ class ElasticIndexTask extends BuildTask
         }
     }
 
-
     /**
      * Execute the update on the client
      *
@@ -238,77 +307,4 @@ class ElasticIndexTask extends BuildTask
         $index = $this->getIndex();
         $this->service->updateIndex($index, $items);
     }
-
-    /**
-     * @return mixed
-     */
-    public function getService()
-    {
-        return $this->service;
-    }
-
-    /**
-     * @param mixed $service
-     */
-    public function setService($service): void
-    {
-        $this->service = $service;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getLogger()
-    {
-        return $this->logger;
-    }
-
-    /**
-     * @param mixed $logger
-     */
-    public function setLogger($logger): void
-    {
-        $this->logger = $logger;
-    }
-
-    public function isDebug(): bool
-    {
-        return $this->debug ?? false;
-    }
-
-    /**
-     * Set the debug mode
-     *
-     * @param bool $debug Set the task in debug mode
-     * @param bool $force Force a task in debug mode, despite e.g. being Live and not CLI
-     * @return self
-     */
-    public function setDebug(bool $debug, bool $force = false): self
-    {
-        // Make the debug a configurable, forcing it to always be false from config
-        if (!$force && ElasticCoreService::config()->get('debug') === false) {
-            $debug = false;
-        }
-
-        $this->debug = $debug;
-
-        return $this;
-    }
-
-    /**
-     * @return BaseIndex
-     */
-    public function getIndex()
-    {
-        return $this->index;
-    }
-
-    /**
-     * @param mixed $index
-     */
-    public function setIndex($index): void
-    {
-        $this->index = $index;
-    }
-
 }

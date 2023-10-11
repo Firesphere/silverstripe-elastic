@@ -7,8 +7,6 @@ use Firesphere\ElasticSearch\Indexes\BaseIndex as ElasticBaseIndex;
 use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
 use Firesphere\SearchBackend\Factories\DocumentCoreFactory;
 use Firesphere\SearchBackend\Helpers\DataResolver;
-use Firesphere\SearchBackend\Helpers\FieldResolver;
-use Firesphere\SearchBackend\Helpers\Statics;
 use Firesphere\SearchBackend\Services\BaseService;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
