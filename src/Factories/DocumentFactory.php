@@ -29,14 +29,6 @@ class DocumentFactory extends DocumentCoreFactory
     use Extensible;
 
     /**
-     * @var bool Debug this build
-     */
-    protected $debug = false;
-
-    protected $fieldResolver;
-
-
-    /**
      * Note, it can only take one type of class at a time!
      * So make sure you properly loop and set $class
      *
@@ -70,22 +62,6 @@ class DocumentFactory extends DocumentCoreFactory
         }
 
         return $docs;
-    }
-
-    /**
-     * @return mixed|object|Injector
-     */
-    public function getFieldResolver(): mixed
-    {
-        return $this->fieldResolver;
-    }
-
-    /**
-     * @param mixed|object|Injector $fieldResolver
-     */
-    public function setFieldResolver(mixed $fieldResolver): void
-    {
-        $this->fieldResolver = $fieldResolver;
     }
 
     /**
@@ -134,62 +110,9 @@ class DocumentFactory extends DocumentCoreFactory
     }
 
     /**
-     * Determine if the given object is one of the given type
-     *
-     * @param string|DataObject $class Class to compare
-     * @param array|string $base Class or list of base classes
-     * @return bool
-     */
-    protected function classIs($class, $base): bool
-    {
-        $base = is_array($base) ? $base : [$base];
-
-        foreach ($base as $nextBase) {
-            if ($this->classEquals($class, $nextBase)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Check if a base class is an instance of the expected base group
-     *
-     * @param string|DataObject $class Class to compare
-     * @param string $base Base class
-     * @return bool
-     */
-    protected function classEquals($class, $base): bool
-    {
-        return $class === $base || ($class instanceof $base);
-    }
-
-    /**
-     * Use the DataResolver to find the value(s) for a field.
-     * Returns an array of values, and if it's multiple, it becomes a long array
-     *
-     * @param DataObject $object Object to resolve
-     * @param array $options Customised options
-     * @return array
-     */
-    protected function getValuesForField($object, $options): array
-    {
-        try {
-            $valuesForField = [DataResolver::identify($object, $options['fullfield'])];
-        } catch (Exception $error) {
-            // @codeCoverageIgnoreStart
-            $valuesForField = [];
-            // @codeCoverageIgnoreEnd
-        }
-
-        return $valuesForField;
-    }
-
-    /**
      * Push field to a document
      *
-     * @param array $doc Solr document
+     * @param array $doc Elastic document
      * @param array $options Custom options
      * @param DBField|string|null $value Value(s) of the field
      */
