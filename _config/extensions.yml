@@ -1,3 +1,6 @@
 Firesphere\SearchBackend\Models\SearchSynonym:
   extensions:
     - Firesphere\ElasticSearch\Extensions\ElasticSynonymExtension
+SilverStripe\ORM\DataObject:
+  extensions:
+    - Firesphere\ElasticSearch\Extensions\DataObjectElasticExtension
