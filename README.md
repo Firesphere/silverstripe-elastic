@@ -2,6 +2,11 @@
 
 ### This module is made possibly thanks to [Pikselin](https://pikselin.com)
 
+## Installation
+
+`composer require firesphere/elastic`
+
+
 ## Elastic search with Silverstripe
 
 This module provides an API similar to the [Solr Search](https://firesphere.github.io/solr-search) module.
@@ -89,6 +94,33 @@ Please refer to the Solr documentation, and take the YML there as a guideline fo
 
 The goal is to have a near-identical API, which is largely the case already.
 
+## Creating a search
+
+In a of choice, here is an example of a search:
+
+```php
+class MyController extends PageController
+{
+    public function search()
+    {   
+        $query = $this->getRequest()->getVars();
+        if (isset($query['query'])) {
+            $baseQuery = new ElasticQuery();
+            // Add the term
+            $baseQuery->addTerm($query['query']);
+            // Ensure to start at 0
+            $start = isset($query['start']) ? $query['start'] : 0;
+            $baseQuery->setStart($start);
+            // Get the index
+            $index = new ElasticProjectIndex();
+            // And do the search
+            $this->Results = $index->doSearch($baseQuery);
+        }
+
+        return $this;
+    }
+}
+```
 ## Permissions
 
 As with the Solr search, all documents are indexed with a `ViewStatus` field.
