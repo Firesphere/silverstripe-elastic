@@ -1,10 +1,10 @@
 # Modern Silverstripe Elastic search
 
-**This module is made possibly thanks to [Pikselin](https://pikselin.com)**
+### This module is made possibly thanks to [Pikselin](https://pikselin.com)
 
 ## Elastic search with Silverstripe
 
-This module provides an API similar to the [Solr Search](https://firesphere.github.io/solr-search] module).
+This module provides an API similar to the [Solr Search](https://firesphere.github.io/solr-search) module.
 
 ### Basic search index
 
@@ -142,4 +142,4 @@ Cow!
 
 # Sponsors
 
-// @todo Firesphere needs to get some sponsor logos
+// @todo Firesphere needs to get some sponsor logos (And maybe some sponsors?)
