@@ -123,7 +123,7 @@ class DocumentFactory extends DocumentCoreFactory
             $value = gmdate('Y-m-d\TH:i:s\Z', strtotime($value));
         }
 
-        $name = getShortFieldName($options['name']);
+        $name = $this->getShortFieldName($options['name']);
 
         $doc[$name] = $value;//, $options['boost'], Document::MODIFIER_SET);
     }
