@@ -21,7 +21,7 @@ use SilverStripe\ORM\FieldType\DBField;
  * Class DocumentFactory
  * Factory to create documents to be pushed to Solr
  *
- * @package Firesphere\Solr\Search
+ * @package Firesphere\Elastic\Search
  */
 class DocumentFactory extends DocumentCoreFactory
 {
