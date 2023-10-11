@@ -137,10 +137,10 @@ abstract class BaseIndex extends CoreIndex
     public function buildElasticQuery(ElasticQuery $query)
     {
         // Not pretty, but it works for now
-        $query->addFilter('ViewStatus', $this->getViewStatusFilter());
-        $q = $query->getFiltersForMatch();
+//        $filters = $this->getViewStatusFilter();
+        $filters = ['term' => $query->getFiltersForMatch()];
         // Always primarily search against the _text field, that's where all content is
-        $q[]['match'] = ['_text' => $query->getTerms()[0]['text']];
+        $q['_text'] = $query->getTerms()[0]['text'];
         $search = [
             'index' => $this->getIndexName(),
             'from'  => $query->getStart(),
@@ -148,7 +148,16 @@ abstract class BaseIndex extends CoreIndex
             'body'  => [
                 'query' => [
                     'bool' => [
-                        'must' => $q
+                        'must'   => [
+                            'match' => $q,
+                        ],
+                        'filter' => [
+                            [
+                                'terms' => [
+                                    'ViewStatus' => $this->getViewStatusFilter(),
+                                ]
+                            ],
+                        ],
                     ]
                 ]
             ]

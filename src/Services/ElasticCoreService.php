@@ -40,10 +40,14 @@ class ElasticCoreService extends BaseService
             $uri,
             $endPoint0['port'] ?? 9200
         );
-        $this->client = ClientBuilder::create()
-            ->setHosts([$uri])
-            ->setApiKey($endPoint0['apiKey'])
-            ->build();
+        $builder = ClientBuilder::create()
+            ->setHosts([$uri]);
+        if ($endPoint0['apiKey']) {
+            $builder->setApiKey($endPoint0['apiKey']);
+        } elseif ($endPoint0['username'] && $endPoint0['password']) {
+            $builder->setBasicAuthentication($endPoint0['username'], $endPoint0['password']);
+        }
+        $this->client = $builder->build();
         parent::__construct(BaseIndex::class);
     }
 

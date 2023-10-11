@@ -22,6 +22,11 @@ class ElasticQuery extends BaseQuery
      * @var array Filters to use/apply
      */
     protected $filters = [];
+
+    /**
+     * @var array Filters that are not exclusive
+     */
+    protected $orFilters = [];
     /**
      * @var int Minimum results a facet query has to have
      */
@@ -155,6 +160,21 @@ class ElasticQuery extends BaseQuery
         } else {
             $return[] = ['match' => [$key => $value]];
         }
+    }
+
+    public function getOrFilters(): array
+    {
+        return $this->orFilters;
+    }
+
+    public function setOrFilters(array $orFilters): void
+    {
+        $this->orFilters = $orFilters;
+    }
+
+    public function addOrFilters(string $key, array $orFilters): void
+    {
+        $this->orFilters[$key] = $orFilters;
     }
 
 }
