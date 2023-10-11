@@ -22,6 +22,11 @@ class ElasticQuery extends BaseQuery
      * @var array Filters to use/apply
      */
     protected $filters = [];
+
+    /**
+     * @var array Filters that are not exclusive
+     */
+    protected $orFilters = [];
     /**
      * @var int Minimum results a facet query has to have
      */
@@ -99,7 +104,8 @@ class ElasticQuery extends BaseQuery
     public function addTerm(string $term, array $fields = [], int $boost = 0, $fuzzy = null): self
     {
         $this->terms[] = [
-            'text' => $term,
+            'text'   => $term,
+            'fields' => $fields
         ];
 
         return $this;
@@ -136,25 +142,19 @@ class ElasticQuery extends BaseQuery
         return $this;
     }
 
-    public function getFiltersForMatch(): array
+    public function getOrFilters(): array
     {
-        $return = [];
-        foreach ($this->filters as $field => $value) {
-            $this->toMatch($field, $value, $return);
-        }
-
-        return $return;
+        return $this->orFilters;
     }
 
-    private function toMatch($key, $value, &$return)
+    public function setOrFilters(array $orFilters): void
     {
-        if (is_array($value)) {
-            foreach ($value as $val) {
-                $this->toMatch($key, $val, $return);
-            }
-        } else {
-            $return[] = ['match' => [$key => $value]];
-        }
+        $this->orFilters = $orFilters;
+    }
+
+    public function addOrFilters(string $key, array $orFilters): void
+    {
+        $this->orFilters[$key] = $orFilters;
     }
 
 }

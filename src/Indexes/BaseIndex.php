@@ -4,6 +4,7 @@ namespace Firesphere\ElasticSearch\Indexes;
 
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
+use Firesphere\ElasticSearch\Queries\Builders\QueryBuilder;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use Firesphere\ElasticSearch\Results\SearchResult;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
@@ -125,36 +126,13 @@ abstract class BaseIndex extends CoreIndex
      */
     public function doSearch(ElasticQuery $query)
     {
-        $this->clientQuery = $this->buildElasticQuery($query);
+        $this->clientQuery = QueryBuilder::buildQuery($query, $this);
 
         $result = $this->client->search($this->clientQuery);
 
         $result = new SearchResult($result, $query, $this);
 
         return $result;
-    }
-
-    public function buildElasticQuery(ElasticQuery $query)
-    {
-        // Not pretty, but it works for now
-        $query->addFilter('ViewStatus', $this->getViewStatusFilter());
-        $q = $query->getFiltersForMatch();
-        // Always primarily search against the _text field, that's where all content is
-        $q[]['match'] = ['_text' => $query->getTerms()[0]['text']];
-        $search = [
-            'index' => $this->getIndexName(),
-            'from'  => $query->getStart(),
-            'size'  => $query->getRows(),
-            'body'  => [
-                'query' => [
-                    'bool' => [
-                        'must' => $q
-                    ]
-                ]
-            ]
-        ];
-
-        return $search;
     }
 
     /**
