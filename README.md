@@ -1,6 +1,6 @@
 # Modern Silverstripe Elastic search
 
-### This module is made possibly thanks to [Pikselin](https://pikselin.com)
+### This module is made possible thanks to [Pikselin](https://pikselin.com)
 
 ## Installation
 
