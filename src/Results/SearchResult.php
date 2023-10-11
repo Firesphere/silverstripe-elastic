@@ -258,4 +258,12 @@ class SearchResult extends ViewableData implements SearchResultInterface
 
         return $matches;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function createFacet($facets, $options, $class, array $facetArray)
+    {
+        return $facetArray;
+    }
 }

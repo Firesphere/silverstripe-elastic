@@ -6,7 +6,6 @@
 
 `composer require firesphere/elastic`
 
-
 ## Elastic search with Silverstripe
 
 This module provides an API similar to the [Solr Search](https://firesphere.github.io/solr-search) module.
@@ -38,6 +37,11 @@ Firesphere\ElasticSearch\Services\ElasticCoreService:
 Take special note of the port. When using your own Elastic instance, this might be the standard port 9200.
 On Elastic Cloud, it's all routed through a reverse proxy on port 443 (https).
 
+*NOTE*
+It's obviously never a great idea to use api keys or passwords in YML, but that's okay,
+you can use Silverstripe's config API, where backticked items are replaced with values from your `.env` configuration:
+
+```password: '`ELASTIC_PASSWORD`'```
 ### Creating an index
 
 An index has two parts, the class and the configuration.
