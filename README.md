@@ -1,6 +1,6 @@
 # Modern Silverstripe Elastic search
 
-** This module is made possibly by [Pikselin](https://pikselin.com) **
+**This module is made possibly thanks to [Pikselin](https://pikselin.com)**
 
 ## Elastic search with Silverstripe
 
@@ -83,11 +83,34 @@ Firesphere\ElasticSearch\Indexes\BaseIndex:
 This would at index time add those related fields in to the index, as well as at search runtime ensure
 all the fields are properly added as filters, where needed.
 
+### Further configuration
+
+Please refer to the Solr documentation, and take the YML there as a guideline for configuring Elastic.
+
+The goal is to have a near-identical API, which is largely the case already.
+
 ## Permissions
 
 As with the Solr search, all documents are indexed with a `ViewStatus` field.
 This field determines who can see the results. At search runtime, the value is calculated based on the current user
-and as such passed in as an extra filter.
+and as such passed in as an extra, required, filter.
+
+### Further functionality
+
+#### Done(~ish)
+- [x] Basic filtering
+- [x] Pagination
+- [x] Actually, you know... search
+- [x] Highlighting~ish
+- [x] Synonyms
+- [x] Group-access filtering (e.g. all, administrators, specific groups, from access setting in the CMS)
+
+#### On the to-do list is:
+- [ ] Work out the filtering better
+- [ ] Boosting
+- [ ] Faceting
+- [ ] Spellchecking
+- [ ] Unit tests and integration tests
 
 # Cow?
 
@@ -116,3 +139,7 @@ Cow!
       ##V|   |_/`"""`\_|   |V##
          ##V##         ##V##
 ```
+
+# Sponsors
+
+// @todo Firesphere needs to get some sponsor logos
