@@ -52,7 +52,7 @@ class DataObjectElasticExtension extends DataExtension
                     $service->getClient()->deleteByQuery($deleteQuery);
                 } catch (Exception $e) {
                     $dirty = $this->owner->getDirtyClass('DELETE');
-                    $ids = json_decode($dirty->IDs);
+                    $ids = json_decode($dirty->IDs ?? '[]');
                     $ids[] = $this->owner->ID;
                     $dirty->IDs = json_encode($ids);
                     $dirty->write();

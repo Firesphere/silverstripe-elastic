@@ -4,6 +4,7 @@ namespace Firesphere\ElasticSearch\Factories;
 
 use Exception;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex as ElasticBaseIndex;
+use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
 use Firesphere\SearchBackend\Factories\DocumentCoreFactory;
 use Firesphere\SearchBackend\Services\BaseService;
@@ -14,6 +15,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\UniqueKey\UniqueKeyService;
 
 /**
  * Class DocumentFactory
@@ -151,6 +153,7 @@ class DocumentFactory extends DocumentCoreFactory
     {
         $doc[BaseService::ID_FIELD] = $item->ClassName . '-' . $item->ID;
         $doc[BaseService::CLASS_ID_FIELD] = $item->ID;
+        $doc[ElasticCoreService::ID_KEY] = $this->keyService->generateKey($item);
         // Set a known ID, with field name _id, for Elastic
         $doc['ClassName'] = $item->ClassName;
         $hierarchy = ClassInfo::ancestry($item);

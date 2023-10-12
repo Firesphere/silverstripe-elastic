@@ -21,6 +21,8 @@ class ElasticCoreService extends BaseService
 {
     use Configurable;
 
+    public const ID_KEY = 'UniqueKey';
+
     private const ENVIRONMENT_VARS = [
         'ELASTIC_ENDPOINT' => 'host',
         'ELASTIC_USERNAME' => 'username',
@@ -99,7 +101,7 @@ class ElasticCoreService extends BaseService
                 $body['body'][] = [
                     'index' => [
                         '_index' => $index->getIndexName(),
-                        '_id' => $doc['id']
+                        '_id' => $doc[self::ID_KEY]
                     ]
                 ];
                 $doc['_extract_binary_content'] = true;
@@ -110,7 +112,6 @@ class ElasticCoreService extends BaseService
             $this->client->bulk($body);
         }
     }
-
 
     /**
      * Get the document factory prepared
