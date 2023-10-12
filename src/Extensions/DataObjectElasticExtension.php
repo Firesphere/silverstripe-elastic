@@ -5,7 +5,7 @@ namespace Firesphere\ElasticSearch\Extensions;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\MissingParameterException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
-use Firesphere\ElasticSearch\Indexes\BaseIndex;
+use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
 use Psr\Log\LoggerInterface;
@@ -32,7 +32,7 @@ class DataObjectElasticExtension extends DataExtension
         $service = new ElasticCoreService();
         $indexes = $service->getValidIndexes();
         foreach ($indexes as $index) {
-            $config = BaseIndex::config()->get($index);
+            $config = ElasticIndex::config()->get($index);
             if (array_key_exists($this->owner->ClassName, $config)) {
                 $deleteQuery = [
                     'index' => $index,

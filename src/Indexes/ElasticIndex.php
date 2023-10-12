@@ -15,9 +15,10 @@ use LogicException;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Deprecation;
 
-abstract class BaseIndex extends CoreIndex
+abstract class ElasticIndex extends CoreIndex
 {
     use Extensible;
     use Configurable;
@@ -37,7 +38,7 @@ abstract class BaseIndex extends CoreIndex
 
     public function __construct()
     {
-        $this->client = (new ElasticCoreService())->getClient();
+        $this->client = Injector::inst()->get(ElasticCoreService::class)->getClient();
 
         $this->extend('onBeforeInit');
         $this->init();

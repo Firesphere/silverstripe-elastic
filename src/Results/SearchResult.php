@@ -3,7 +3,7 @@
 namespace Firesphere\ElasticSearch\Results;
 
 use Elastic\Elasticsearch\Response\Elasticsearch;
-use Firesphere\ElasticSearch\Indexes\BaseIndex;
+use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use Firesphere\SearchBackend\Interfaces\SearchResultInterface;
 use Firesphere\SearchBackend\Services\BaseService;
@@ -29,7 +29,7 @@ class SearchResult extends ViewableData implements SearchResultInterface
      */
     protected $query;
     /**
-     * @var BaseIndex Index the query has run on
+     * @var ElasticIndex Index the query has run on
      */
     protected $index;
     /**
@@ -44,9 +44,9 @@ class SearchResult extends ViewableData implements SearchResultInterface
      *
      * @param Elasticsearch $result
      * @param ElasticQuery $query
-     * @param BaseIndex $index
+     * @param ElasticIndex $index
      */
-    public function __construct(Elasticsearch $result, ElasticQuery $query, BaseIndex $index)
+    public function __construct(Elasticsearch $result, ElasticQuery $query, ElasticIndex $index)
     {
         parent::__construct();
         $this->index = $index;

@@ -3,15 +3,13 @@
 namespace Firesphere\ElasticSearch\Factories;
 
 use Exception;
-use Firesphere\ElasticSearch\Indexes\BaseIndex as ElasticBaseIndex;
+use Firesphere\ElasticSearch\Indexes\ElasticIndex as ElasticBaseIndex;
 use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
 use Firesphere\SearchBackend\Factories\DocumentCoreFactory;
-use Firesphere\SearchBackend\Helpers\DataResolver;
 use Firesphere\SearchBackend\Services\BaseService;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDate;

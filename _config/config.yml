@@ -3,7 +3,7 @@ Name: ElasticSearch
 ---
 Firesphere\ElasticSearch\Services\ElasticCoreService:
   cpucores: 4
-Firesphere\ElasticSearch\Indexes\BaseIndex:
+Firesphere\ElasticSearch\Indexes\ElasticIndex:
   health:
     Classes:
       - Page

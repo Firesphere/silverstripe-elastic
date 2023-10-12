@@ -2,7 +2,7 @@
 
 namespace Firesphere\ElasticSearch\Queries\Builders;
 
-use Firesphere\ElasticSearch\Indexes\BaseIndex;
+use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use Firesphere\SearchBackend\Indexes\CoreIndex;
 use Firesphere\SearchBackend\Interfaces\QueryBuilderInterface;
@@ -12,7 +12,7 @@ class QueryBuilder implements QueryBuilderInterface
 {
     /**
      * @param ElasticQuery $query
-     * @param BaseIndex $index
+     * @param ElasticIndex $index
      * @return array
      */
     public static function buildQuery(BaseQuery $query, CoreIndex $index): array
@@ -43,11 +43,11 @@ class QueryBuilder implements QueryBuilderInterface
 
     /**
      * Required must-be filters if they're here.
-     * @param CoreIndex|BaseIndex $index
+     * @param CoreIndex|ElasticIndex $index
      * @param ElasticQuery|BaseQuery $query
      * @return array[]
      */
-    private static function getFilters(CoreIndex|BaseIndex $index, ElasticQuery|BaseQuery $query): array
+    private static function getFilters(CoreIndex|ElasticIndex $index, ElasticQuery|BaseQuery $query): array
     {
         // Default,
         $filters = [

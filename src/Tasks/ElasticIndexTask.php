@@ -4,7 +4,7 @@ namespace Firesphere\ElasticSearch\Tasks;
 
 use Elastic\Elasticsearch\Exception\HttpClientException;
 use Exception;
-use Firesphere\ElasticSearch\Indexes\BaseIndex;
+use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Helpers\IndexingHelper;
 use Firesphere\SearchBackend\States\SiteState;
@@ -66,7 +66,7 @@ class ElasticIndexTask extends BuildTask
     protected $debug;
 
     /**
-     * @var BaseIndex
+     * @var ElasticIndex
      */
     protected $index;
 
@@ -101,7 +101,7 @@ class ElasticIndexTask extends BuildTask
         $groups = 0;
         $indexes = $this->service->getValidIndexes($request->getVar('index'));
         foreach ($indexes as $indexName) {
-            /** @var BaseIndex $index */
+            /** @var ElasticIndex $index */
             $index = Injector::inst()->get($indexName, false);
             $this->setIndex($index);
             $indexClasses = $this->index->getClasses();
@@ -229,7 +229,7 @@ class ElasticIndexTask extends BuildTask
     }
 
     /**
-     * @return BaseIndex
+     * @return ElasticIndex
      */
     public function getIndex()
     {

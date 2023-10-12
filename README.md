@@ -39,9 +39,25 @@ On Elastic Cloud, it's all routed through a reverse proxy on port 443 (https).
 
 *NOTE*
 It's obviously never a great idea to use api keys or passwords in YML, but that's okay,
-you can use Silverstripe's config API, where backticked items are replaced with values from your `.env` configuration:
+to configure it from environment:
+```dotenv
+ELASTIC_ENDPOINT=host.example.com
+ELASTIC_USERNAME=user@example.com
+ELASTIC_PASSWORD=examplepassword
+ELASTIC_API_KEY=mybase64apikeyhere===
+ELASTIC_PORT=443
+ELASTIC_PROTOCOL=https
+```
+And in your YML:
+```yaml
+---
+Name: MyElastic
+---
+Firesphere\ElasticSearch\Services\ElasticCoreService:
+    config:
+        endpoint: ENVIRONMENT
+```
 
-```password: '`ELASTIC_PASSWORD`'```
 ### Creating an index
 
 An index has two parts, the class and the configuration.
@@ -54,9 +70,9 @@ The most basic class would by something like the following:
 
 namespace Firesphere\MyProject\Indexes;
 
-use Firesphere\ElasticSearch\Indexes\BaseIndex;
+use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 
-class ElasticProjectIndex extends BaseIndex
+class ElasticProjectIndex extends ElasticIndex
 {
     public function getIndexName()
     {
@@ -70,7 +86,7 @@ Where `search-indexname` is the name of the index you've chosen when configuring
 
 The accompanying YML that configures the fields would potentially look like this:
 ```yaml
-Firesphere\ElasticSearch\Indexes\BaseIndex:
+Firesphere\ElasticSearch\Indexes\ElasticIndex:
   search-indexname:
     Classes:
       - Page
@@ -100,7 +116,7 @@ The goal is to have a near-identical API, which is largely the case already.
 
 ## Creating a search
 
-In a of choice, here is an example of a search:
+In a controller of choice, here is an example of a search:
 
 ```php
 class MyController extends PageController

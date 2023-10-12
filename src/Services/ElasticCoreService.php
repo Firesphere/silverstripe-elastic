@@ -8,17 +8,27 @@ use Elastic\Elasticsearch\Exception\AuthenticationException;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Firesphere\ElasticSearch\Factories\DocumentFactory;
-use Firesphere\ElasticSearch\Indexes\BaseIndex;
+use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\SearchBackend\Services\BaseService;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionException;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\SS_List;
 
 class ElasticCoreService extends BaseService
 {
     use Configurable;
+
+    private const ENVIRONMENT_VARS = [
+        'ELASTIC_ENDPOINT' => 'host',
+        'ELASTIC_USERNAME' => 'username',
+        'ELASTIC_PASSWORD' => 'password',
+        'ELASTIC_API_KEY'  => 'apiKey',
+        'ELASTIC_PORT'     => 'port',
+        'ELASTIC_PROTOCOL' => 'protocol'
+    ];
 
     /**
      * @var Client Comms client with Elastic
@@ -32,23 +42,30 @@ class ElasticCoreService extends BaseService
     public function __construct()
     {
         $config = self::config()->get('config');
-        $endPoint0 = $config['endpoint'][0];
-        $uri = str_replace(['https://', 'http://'], '', $endPoint0['host']);
+        if ($config['endpoint'] === 'ENVIRONMENT') {
+            $endpoint0 = [];
+            foreach (self::ENVIRONMENT_VARS as $envVar => $elasticVar) {
+                $endpoint0[$elasticVar] = Environment::getEnv($envVar);
+            }
+        } else {
+            $endpoint0 = $config['endpoint'][0];
+        }
+        $uri = str_replace(['https://', 'http://'], '', $endpoint0['host']);
         $uri = sprintf(
             '%s://%s:%s',
-            $endPoint0['protocol'] ?? 'https',
+            $endpoint0['protocol'] ?? 'https',
             $uri,
-            $endPoint0['port'] ?? 9200
+            $endpoint0['port'] ?? 9200
         );
         $builder = ClientBuilder::create()
             ->setHosts([$uri]);
-        if ($endPoint0['apiKey']) {
-            $builder->setApiKey($endPoint0['apiKey']);
-        } elseif ($endPoint0['username'] && $endPoint0['password']) {
-            $builder->setBasicAuthentication($endPoint0['username'], $endPoint0['password']);
+        if ($endpoint0['apiKey']) {
+            $builder->setApiKey($endpoint0['apiKey']);
+        } elseif ($endpoint0['username'] && $endpoint0['password']) {
+            $builder->setBasicAuthentication($endpoint0['username'], $endpoint0['password']);
         }
         $this->client = $builder->build();
-        parent::__construct(BaseIndex::class);
+        parent::__construct(ElasticIndex::class);
     }
 
     public function getClient(): Client
@@ -62,7 +79,7 @@ class ElasticCoreService extends BaseService
     }
 
     /**
-     * @param BaseIndex $index
+     * @param ElasticIndex $index
      * @param SS_List $items
      * @throws NotFoundExceptionInterface
      * @throws ClientResponseException
@@ -111,99 +128,3 @@ class ElasticCoreService extends BaseService
         return $factory;
     }
 }
-
-$params = [
-    'pipeline' => 'ent-search-generic-ingestion',
-    'body'     => [
-        [
-            'index' => [
-                '_index' => 'search-stickerindex',
-                '_id'    => '9780553351927',
-            ],
-        ],
-        [
-            'name'                    => 'Snow Crash',
-            'author'                  => 'Neal Stephenson',
-            'release_date'            => '1992-06-01',
-            'page_count'              => 470,
-            '_extract_binary_content' => true,
-            '_reduce_whitespace'      => true,
-            '_run_ml_inference'       => false,
-        ],
-        [
-            'index' => [
-                '_index' => 'search-stickerindex',
-                '_id'    => '9780441017225',
-            ],
-        ],
-        [
-            'name'                    => 'Revelation Space',
-            'author'                  => 'Alastair Reynolds',
-            'release_date'            => '2000-03-15',
-            'page_count'              => 585,
-            '_extract_binary_content' => true,
-            '_reduce_whitespace'      => true,
-            '_run_ml_inference'       => false,
-        ],
-        [
-            'index' => [
-                '_index' => 'search-stickerindex',
-                '_id'    => '9780451524935',
-            ],
-        ],
-        [
-            'name'                    => '1984',
-            'author'                  => 'George Orwell',
-            'release_date'            => '1985-06-01',
-            'page_count'              => 328,
-            '_extract_binary_content' => true,
-            '_reduce_whitespace'      => true,
-            '_run_ml_inference'       => false,
-        ],
-        [
-            'index' => [
-                '_index' => 'search-stickerindex',
-                '_id'    => '9781451673319',
-            ],
-        ],
-        [
-            'name'                    => 'Fahrenheit 451',
-            'author'                  => 'Ray Bradbury',
-            'release_date'            => '1953-10-15',
-            'page_count'              => 227,
-            '_extract_binary_content' => true,
-            '_reduce_whitespace'      => true,
-            '_run_ml_inference'       => false,
-        ],
-        [
-            'index' => [
-                '_index' => 'search-stickerindex',
-                '_id'    => '9780060850524',
-            ],
-        ],
-        [
-            'name'                    => 'Brave New World',
-            'author'                  => 'Aldous Huxley',
-            'release_date'            => '1932-06-01',
-            'page_count'              => 268,
-            '_extract_binary_content' => true,
-            '_reduce_whitespace'      => true,
-            '_run_ml_inference'       => false,
-        ],
-        [
-            'index' => [
-                '_index' => 'search-stickerindex',
-                '_id'    => '9780385490818',
-            ],
-        ],
-        [
-            'name'                    => 'The Handmaid\'s Tale',
-            'author'                  => 'Margaret Atwood',
-            'release_date'            => '1985-06-01',
-            'page_count'              => 311,
-            '_extract_binary_content' => true,
-            '_reduce_whitespace'      => true,
-            '_run_ml_inference'       => false,
-        ],
-    ],
-];
