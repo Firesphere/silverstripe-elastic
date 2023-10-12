@@ -34,8 +34,10 @@ class DataObjectElasticExtension extends DataExtension
         $service = new ElasticCoreService();
         $indexes = $service->getValidIndexes();
         foreach ($indexes as $index) {
-            $config = ElasticIndex::config()->get($index);
-            if (array_key_exists($this->owner->ClassName, $config)) {
+            /** @var ElasticIndex $idx */
+            $idx = Injector::inst()->get($index);
+            $config = ElasticIndex::config()->get($idx->getIndexName());
+            if (in_array($this->owner->ClassName, $config['Classes'])) {
                 $deleteQuery = [
                     'index' => $index,
                     'body'  => [
@@ -63,9 +65,7 @@ class DataObjectElasticExtension extends DataExtension
     }
 
     /**
-     * @throws NotFoundExceptionInterface
-     * @throws ClientResponseException
-     * @throws ServerResponseException
+     * Reindex after write, if it's an indexed new/updated object
      */
     public function onAfterWrite()
     {
@@ -78,6 +78,11 @@ class DataObjectElasticExtension extends DataExtension
         }
     }
 
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ClientResponseException
+     * @throws ServerResponseException
+     */
     private function doIndex()
     {
         $list = DataObject::get($this->owner->ClassName, "ID = " . $this->owner->ID);
