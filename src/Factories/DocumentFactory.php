@@ -122,6 +122,7 @@ class DocumentFactory extends DocumentCoreFactory
         }
 
         $name = $this->getShortFieldName($options['name']);
+        $name = str_replace('_', '.', $name);
 
         $doc[$name] = $value;//, $options['boost'], Document::MODIFIER_SET);
     }
