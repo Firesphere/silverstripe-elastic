@@ -118,9 +118,9 @@ class DocumentFactory extends DocumentCoreFactory
      */
     protected function addToDoc(&$doc, $options, $value): void
     {
-        /* Solr requires dates in the form 1995-12-31T23:59:59Z, so we need to normalize to GMT */
+        /* Elastic requires dates in the form yyyy/MM/dd HH:mm:ss Z, so we need to normalize to GMT */
         if ($value instanceof DBDate) {
-            $value = gmdate('Y-m-d\TH:i:s\Z', strtotime($value));
+            $value = gmdate('Y/m/d H:i:s\Z', strtotime($value));
         }
 
         $name = $this->getShortFieldName($options['name']);

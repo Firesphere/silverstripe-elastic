@@ -94,9 +94,13 @@ class ElasticCoreService extends BaseService
         $docs = $factory->buildItems($fields, $index);
         if (count($docs)) {
             $body = [
-                'pipeline' => 'ent-search-generic-ingestion',
-                'body'     => []
+                'body' => [
+                    'index' => $index->getIndexName()
+                ]
             ];
+            if (self::config()->get('pipeline')) {
+                $body['pipeline'] = self::config()->get('pipeline');
+            }
             foreach ($docs as $doc) {
                 $body['body'][] = [
                     'index' => [
