@@ -53,9 +53,9 @@ class ElasticCoreService extends BaseService
         $uri = str_replace(['https://', 'http://'], '', $endpoint0['host']);
         $uri = sprintf(
             '%s://%s:%s',
-            $endpoint0['protocol'] ?? 'https',
+            $endpoint0['protocol']?: 'https',
             $uri,
-            $endpoint0['port'] ?? 9200
+            $endpoint0['port']?: 9200
         );
         $builder = ClientBuilder::create()
             ->setHosts([$uri]);
