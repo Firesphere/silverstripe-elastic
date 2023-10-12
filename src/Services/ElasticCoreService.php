@@ -99,6 +99,7 @@ class ElasticCoreService extends BaseService
                 $body['body'][] = [
                     'index' => [
                         '_index' => $index->getIndexName(),
+                        '_id' => $doc['id']
                     ]
                 ];
                 $doc['_extract_binary_content'] = true;
