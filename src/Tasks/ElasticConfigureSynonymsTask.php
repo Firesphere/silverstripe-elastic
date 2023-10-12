@@ -13,6 +13,26 @@ use SilverStripe\Dev\BuildTask;
 
 class ElasticConfigureSynonymsTask extends BuildTask
 {
+
+    /**
+     * URLSegment of this task
+     *
+     * @var string
+     */
+    private static $segment = 'ElasticSynonymTask';
+    /**
+     * My name
+     *
+     * @var string
+     */
+    protected $title = 'Add/update synonyms in Elasticsearch';
+    /**
+     * What do I do?
+     *
+     * @var string
+     */
+    protected $description = 'Add or update synonyms to Elastic.';
+
     /**
      * @throws ClientResponseException
      * @throws ServerResponseException
