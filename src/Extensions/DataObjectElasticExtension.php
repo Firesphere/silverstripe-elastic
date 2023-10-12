@@ -3,7 +3,6 @@
 namespace Firesphere\ElasticSearch\Extensions;
 
 use Elastic\Elasticsearch\Exception\ClientResponseException;
-use Elastic\Elasticsearch\Exception\MissingParameterException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Exception;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
@@ -15,11 +14,12 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ValidationException;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * Class \Firesphere\ElasticSearch\Extensions\DataObjectElasticExtension
  *
- * @property DataObject|DataObjectSearchExtension|DataObjectElasticExtension $owner
+ * @property DataObject|DataObjectSearchExtension|DataObjectElasticExtension|Versioned $owner
  */
 class DataObjectElasticExtension extends DataExtension
 {
@@ -62,13 +62,34 @@ class DataObjectElasticExtension extends DataExtension
         }
     }
 
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ClientResponseException
+     * @throws ServerResponseException
+     */
     public function onAfterWrite()
     {
         parent::onAfterWrite();
+        if (
+            !$this->owner->hasExtension(Versioned::class) ||
+            ($this->owner->hasExtension(Versioned::class) && $this->owner->isPublished())
+        ) {
+            $this->doIndex();
+        }
     }
 
-    public function onAfterPublish()
+    private function doIndex()
     {
-
+        $list = DataObject::get($this->owner->ClassName, "ID = " . $this->owner->ID);
+        /** @var ElasticCoreService $service */
+        $service = Injector::inst()->get(ElasticCoreService::class);
+        foreach ($service->getValidIndexes() as $indexStr) {
+            /** @var ElasticIndex $index */
+            $index = Injector::inst()->get($indexStr);
+            $idxConfig = ElasticIndex::config()->get($index->getIndexName());
+            if (in_array($this->owner->ClassName, $idxConfig['Classes'])) {
+                $service->updateIndex($index, $list);
+            }
+        }
     }
 }
