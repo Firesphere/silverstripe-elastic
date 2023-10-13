@@ -15,7 +15,6 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\ORM\FieldType\DBField;
-use SilverStripe\ORM\UniqueKey\UniqueKeyService;
 
 /**
  * Class DocumentFactory
@@ -78,7 +77,7 @@ class DocumentFactory extends DocumentCoreFactory
             $fieldData = $this->getFieldResolver()->resolveField($field);
             foreach ($fieldData as $dataField => $options) {
                 // Not an Elastic thing, for now
-//                $options['boost'] = $boostFields[$field] ?? null;
+                //                $options['boost'] = $boostFields[$field] ?? null;
                 $this->addField($doc, $item, $options);
             }
         }

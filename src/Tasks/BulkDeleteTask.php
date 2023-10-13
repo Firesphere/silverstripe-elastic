@@ -2,14 +2,15 @@
 
 namespace Firesphere\ElasticSearch\Tasks;
 
+use Exception;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
+use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 
 class BulkDeleteTask extends BuildTask
 {
-
     /**
      * URLSegment of this task
      *
@@ -36,7 +37,7 @@ class BulkDeleteTask extends BuildTask
     /**
      * @param $request
      * @return void
-     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function run($request)
     {
@@ -55,7 +56,7 @@ class BulkDeleteTask extends BuildTask
             ];
             try {
                 $service->getClient()->deleteByQuery($q);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // noop, just continue
             }
         }

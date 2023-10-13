@@ -13,13 +13,14 @@ This module provides an API similar to the [Solr Search](https://firesphere.gith
 ### Basic search index
 
 - Create an API-index in your ElasticSearch instance
-  - If you have Elastic Enterprise, this is under Search => API
+    - If you have Elastic Enterprise, this is under Search => API
 - Create an API key
-  - You can use a username/password, but API key is recommended
+    - You can use a username/password, but API key is recommended
 
 ### Configuring the service
 
 Configuration is done in YML:
+
 ```yaml
 ---
 Name: MyElastic
@@ -27,11 +28,11 @@ Name: MyElastic
 Firesphere\ElasticSearch\Services\ElasticCoreService:
     config:
         endpoint:
-            - host: "https://my-elasticinstance.elastic-cloud.com"
-              apiKey: "mybase64apikeyhere==="
-              username: "Elastic"
-              password: "mysupersecretpassword"
-              port: 443
+            -   host: "https://my-elasticinstance.elastic-cloud.com"
+                apiKey: "mybase64apikeyhere==="
+                username: "Elastic"
+                password: "mysupersecretpassword"
+                port: 443
 ```
 
 Take special note of the port. When using your own Elastic instance, this might be the standard port 9200.
@@ -40,6 +41,7 @@ On Elastic Cloud, it's all routed through a reverse proxy on port 443 (https).
 *NOTE*
 It's obviously never a great idea to use api keys or passwords in YML, but that's okay,
 to configure it from environment:
+
 ```dotenv
 ELASTIC_ENDPOINT=host.example.com
 ELASTIC_USERNAME=user@example.com
@@ -48,7 +50,9 @@ ELASTIC_API_KEY=mybase64apikeyhere===
 ELASTIC_PORT=443
 ELASTIC_PROTOCOL=https
 ```
+
 And in your YML:
+
 ```yaml
 ---
 Name: MyElastic
@@ -85,6 +89,7 @@ class ElasticProjectIndex extends ElasticIndex
 Where `search-indexname` is the name of the index you've chosen when configuring it in Elastic.
 
 The accompanying YML that configures the fields would potentially look like this:
+
 ```yaml
 Firesphere\ElasticSearch\Indexes\ElasticIndex:
   search-indexname:
@@ -141,6 +146,7 @@ class MyController extends PageController
     }
 }
 ```
+
 ## Permissions
 
 As with the Solr search, all documents are indexed with a `ViewStatus` field.
@@ -150,6 +156,7 @@ and as such passed in as an extra, required, filter.
 ### Further functionality
 
 #### Done(~ish)
+
 - [x] Basic filtering
 - [x] Pagination
 - [x] Actually, you know... search
@@ -158,6 +165,7 @@ and as such passed in as an extra, required, filter.
 - [x] Group-access filtering (e.g. all, administrators, specific groups, from access setting in the CMS)
 
 #### On the to-do list is:
+
 - [ ] Work out the filtering better
 - [ ] Boosting
 - [ ] Faceting

@@ -13,7 +13,6 @@ use SilverStripe\Dev\BuildTask;
 
 class ElasticConfigureSynonymsTask extends BuildTask
 {
-
     /**
      * URLSegment of this task
      *

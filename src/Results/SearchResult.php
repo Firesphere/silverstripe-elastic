@@ -52,10 +52,10 @@ class SearchResult extends ViewableData implements SearchResultInterface
         $this->index = $index;
         $this->query = $query;
         $result = $result->asObject();
-//        if ($query->hasSpellcheck()) {
-//            $this->setSpellcheck($result->getSpellcheck())
-//                ->setCollatedSpellcheck($result->getSpellcheck());
-//        }
+        //        if ($query->hasSpellcheck()) {
+        //            $this->setSpellcheck($result->getSpellcheck())
+        //                ->setCollatedSpellcheck($result->getSpellcheck());
+        //        }
         $this->setMatches($result->hits->hits)
             ->setTotalItems($result->hits->total->value);
     }

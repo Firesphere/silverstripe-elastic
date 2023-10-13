@@ -52,12 +52,14 @@ class ElasticCoreService extends BaseService
         } else {
             $endpoint0 = $config['endpoint'][0];
         }
+        // default to https
+        $endpoint0['protocol'] = $endpoint0['protocol'] ?? 'https';
         $uri = str_replace(['https://', 'http://'], '', $endpoint0['host']);
         $uri = sprintf(
             '%s://%s:%s',
-            $endpoint0['protocol']?: 'https',
+            $endpoint0['protocol'],
             $uri,
-            $endpoint0['port']?: 9200
+            $endpoint0['port'] ?: 9200
         );
         $builder = ClientBuilder::create()
             ->setHosts([$uri]);
@@ -105,7 +107,7 @@ class ElasticCoreService extends BaseService
                 $body['body'][] = [
                     'index' => [
                         '_index' => $index->getIndexName(),
-                        '_id' => $doc[self::ID_KEY]
+                        '_id'    => $doc[self::ID_KEY]
                     ]
                 ];
                 $doc['_extract_binary_content'] = true;

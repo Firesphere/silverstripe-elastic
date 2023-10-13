@@ -7,7 +7,6 @@ use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Exception;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
-use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Core\Injector\Injector;
@@ -19,11 +18,10 @@ use SilverStripe\Versioned\Versioned;
 /**
  * Class \Firesphere\ElasticSearch\Extensions\DataObjectElasticExtension
  *
- * @property DataObject|DataObjectSearchExtension|DataObjectElasticExtension|Versioned $owner
+ * @property DataObject|DataObjectElasticExtension $owner
  */
 class DataObjectElasticExtension extends DataExtension
 {
-
     /**
      * @throws NotFoundExceptionInterface
      * @throws ValidationException

@@ -3,13 +3,3 @@ Name: ElasticSearch
 ---
 Firesphere\ElasticSearch\Services\ElasticCoreService:
   cpucores: 4
-Firesphere\ElasticSearch\Indexes\ElasticIndex:
-  health:
-    Classes:
-      - Page
-    FulltextFields:
-      - Title
-      - getElementsForSearch
-      - Content
-    FilterFields: []
-    FacetFields: []
