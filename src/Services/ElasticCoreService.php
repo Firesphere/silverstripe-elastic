@@ -54,6 +54,7 @@ class ElasticCoreService extends BaseService
         }
         // default to https
         $endpoint0['protocol'] = $endpoint0['protocol'] ?? 'https';
+        print_r($endpoint0);
         $uri = str_replace(['https://', 'http://'], '', $endpoint0['host']);
         $uri = sprintf(
             '%s://%s:%s',

@@ -8,3 +8,4 @@
 /.circleci export-ignore
 /.codeclimate.yml
 /.editorconfig
+/.fixtures

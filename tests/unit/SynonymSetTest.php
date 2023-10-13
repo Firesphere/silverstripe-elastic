@@ -13,10 +13,15 @@ class SynonymSetTest extends SapphireTest
 
     public function testRequireDefaultRecords()
     {
+        $this->assertEquals(1, SynonymSet::get()->count(), 'There can be only one');
+        $this->assertNotNull(SynonymSet::get()->first()->Key);
+    }
+
+    protected function setUp(): void
+    {
         $request = new HTTPRequest('GET', 'dev/build', ['quiet' => true, 'flush' => 1]);
         DatabaseAdmin::singleton()->setRequest($request)->build();
 
-        $this->assertEquals(1, SynonymSet::get()->count(), 'There can be only one');
-        $this->assertNotNull(SynonymSet::get()->first()->Key);
+        parent::setUp();
     }
 }
