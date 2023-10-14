@@ -10,7 +10,9 @@ use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
@@ -63,7 +65,8 @@ class DataObjectElasticExtension extends DataExtension
      */
     private function doIndex()
     {
-        $list = DataObject::get($this->owner->ClassName, "ID = " . $this->owner->ID);
+        $list = ArrayList::create();
+        $list->push($this->owner);
         /** @var ElasticCoreService $service */
         $service = Injector::inst()->get(ElasticCoreService::class);
         foreach ($service->getValidIndexes() as $indexStr) {
@@ -100,7 +103,7 @@ class DataObjectElasticExtension extends DataExtension
      * @return void
      * @throws NotFoundExceptionInterface
      */
-    public function executeQuery(ElasticCoreService $service, array $deleteQuery): void
+    protected function executeQuery(ElasticCoreService $service, array $deleteQuery): void
     {
         try {
             $service->getClient()->deleteByQuery($deleteQuery);
