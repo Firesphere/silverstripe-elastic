@@ -54,7 +54,6 @@ class ElasticCoreService extends BaseService
         }
         // default to https
         $endpoint0['protocol'] = $endpoint0['protocol'] ?? 'https';
-        print_r($endpoint0);
         $uri = str_replace(['https://', 'http://'], '', $endpoint0['host']);
         $uri = sprintf(
             '%s://%s:%s',
@@ -68,6 +67,10 @@ class ElasticCoreService extends BaseService
             $builder->setApiKey($endpoint0['apiKey']);
         } elseif ($endpoint0['username'] && $endpoint0['password']) {
             $builder->setBasicAuthentication($endpoint0['username'], $endpoint0['password']);
+        }
+        // Disable the SSL Certificate check
+        if (Environment::getEnv('ELASTIC_DISABLE_SSLCHECK')) {
+            $builder->setSSLVerification(false);
         }
         $this->client = $builder->build();
         parent::__construct(ElasticIndex::class);
@@ -96,13 +99,13 @@ class ElasticCoreService extends BaseService
         $factory = $this->getFactory($items);
         $docs = $factory->buildItems($fields, $index);
         if (count($docs)) {
-            $body = [
-                'body' => [
-                    'index' => $index->getIndexName()
-                ]
-            ];
             if (self::config()->get('pipeline')) {
-                $body['pipeline'] = self::config()->get('pipeline');
+                $body = [
+                    'body' => [
+                        'index' => $index->getIndexName(),
+                        'pipeline' => self::config()->get('pipeline')
+                    ]
+                ];
             }
             foreach ($docs as $doc) {
                 $body['body'][] = [

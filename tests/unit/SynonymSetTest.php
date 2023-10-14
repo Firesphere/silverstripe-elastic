@@ -3,9 +3,7 @@
 namespace Firesphere\ElasticSearch\Tests;
 
 use Firesphere\ElasticSearch\Models\SynonymSet;
-use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\ORM\DatabaseAdmin;
 
 class SynonymSetTest extends SapphireTest
 {
@@ -13,15 +11,12 @@ class SynonymSetTest extends SapphireTest
 
     public function testRequireDefaultRecords()
     {
+        (new SynonymSet())->requireDefaultRecords();
         $this->assertEquals(1, SynonymSet::get()->count(), 'There can be only one');
+        $key = SynonymSet::get()->first()->Key;
         $this->assertNotNull(SynonymSet::get()->first()->Key);
-    }
-
-    protected function setUp(): void
-    {
-        $request = new HTTPRequest('GET', 'dev/build', ['quiet' => true, 'flush' => 1]);
-        DatabaseAdmin::singleton()->setRequest($request)->build();
-
-        parent::setUp();
+        (new SynonymSet())->requireDefaultRecords();
+        $this->assertEquals(1, SynonymSet::get()->count(), 'There can be only one');
+        $this->assertEquals($key, SynonymSet::get()->first()->Key);
     }
 }

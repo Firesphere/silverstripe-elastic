@@ -1,5 +1,7 @@
 <?php
 
+namespace App\src;
+
 class SearchIndex extends \Firesphere\ElasticSearch\Indexes\ElasticIndex
 {
 
