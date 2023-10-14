@@ -37,18 +37,7 @@ class DataObjectElasticExtension extends DataExtension
             $config = ElasticIndex::config()->get($idx->getIndexName());
             if (in_array($this->owner->ClassName, $config['Classes'])) {
                 $deleteQuery = $this->getDeleteQuery($index);
-                try {
-                    $service->getClient()->deleteByQuery($deleteQuery);
-                } catch (Exception $e) {
-                    $dirty = $this->owner->getDirtyClass('DELETE');
-                    $ids = json_decode($dirty->IDs ?? '[]');
-                    $ids[] = $this->owner->ID;
-                    $dirty->IDs = json_encode($ids);
-                    $dirty->write();
-                    /** @var LoggerInterface $logger */
-                    $logger = Injector::inst()->get(LoggerInterface::class);
-                    $logger->error($e->getMessage(), $e->getTrace());
-                }
+                $this->executeQuery($service, $deleteQuery);
             }
         }
     }
@@ -103,5 +92,27 @@ class DataObjectElasticExtension extends DataExtension
                 ]
             ]
         ];
+    }
+
+    /**
+     * @param ElasticCoreService $service
+     * @param array $deleteQuery
+     * @return void
+     * @throws NotFoundExceptionInterface
+     */
+    public function executeQuery(ElasticCoreService $service, array $deleteQuery): void
+    {
+        try {
+            $service->getClient()->deleteByQuery($deleteQuery);
+        } catch (Exception $e) {
+            $dirty = $this->owner->getDirtyClass('DELETE');
+            $ids = json_decode($dirty->IDs ?? '[]');
+            $ids[] = $this->owner->ID;
+            $dirty->IDs = json_encode($ids);
+            $dirty->write();
+            /** @var LoggerInterface $logger */
+            $logger = Injector::inst()->get(LoggerInterface::class);
+            $logger->error($e->getMessage(), $e->getTrace());
+        }
     }
 }
