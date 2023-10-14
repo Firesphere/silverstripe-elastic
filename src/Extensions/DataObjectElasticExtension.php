@@ -36,16 +36,7 @@ class DataObjectElasticExtension extends DataExtension
             $idx = Injector::inst()->get($index);
             $config = ElasticIndex::config()->get($idx->getIndexName());
             if (in_array($this->owner->ClassName, $config['Classes'])) {
-                $deleteQuery = [
-                    'index' => $index,
-                    'body'  => [
-                        'query' => [
-                            'match' => [
-                                'id' => sprintf('%s-%s', $this->owner->ClassName, $this->owner->ID)
-                            ]
-                        ]
-                    ]
-                ];
+                $deleteQuery = $this->getDeleteQuery($index);
                 try {
                     $service->getClient()->deleteByQuery($deleteQuery);
                 } catch (Exception $e) {
@@ -94,5 +85,23 @@ class DataObjectElasticExtension extends DataExtension
                 $service->updateIndex($index, $list);
             }
         }
+    }
+
+    /**
+     * @param mixed $index
+     * @return array
+     */
+    public function getDeleteQuery(mixed $index): array
+    {
+        return [
+            'index' => $index,
+            'body'  => [
+                'query' => [
+                    'match' => [
+                        'id' => sprintf('%s-%s', $this->owner->ClassName, $this->owner->ID)
+                    ]
+                ]
+            ]
+        ];
     }
 }
