@@ -5,8 +5,10 @@ namespace Firesphere\ElasticSearch\Tests;
 use app\src\SearchIndex;
 use Elastic\Elasticsearch\Client;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ORM\DatabaseAdmin;
 
 class ElasticCoreServiceTest extends SapphireTest
 {
@@ -24,7 +26,10 @@ class ElasticCoreServiceTest extends SapphireTest
     {
         /** @var ElasticCoreService $service */
         $service = Injector::inst()->get(ElasticCoreService::class);
-        $service->updateIndex(new SearchIndex(), Page::get());
+        $adm = DatabaseAdmin::singleton();
+        $adm->setRequest(new HTTPRequest('GET', 'dev/build', ['quiet' => true]));
+        $adm->doBuild(true, true, true);
+        $service->updateIndex(new SearchIndex(), \Page::get());
         $service->getClient()->count(['index' => 'search-testindex']);
     }
 }

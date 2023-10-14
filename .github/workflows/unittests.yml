@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: ddev/github-action-setup-ddev@v1
       # example: composer install
-      - run: ddev composer install --prefer-dist --no-interaction
+      - run: ddev composer install --prefer-dist --no-interaction --no-progress
       - run: ddev composer vendor-expose
       - run: cp .github/assets/search.yml.test app/_config/search.yml
       - run: cp .github/assets/SearchIndex.php.test app/src/SearchIndex.php

@@ -150,4 +150,14 @@ abstract class ElasticIndex extends CoreIndex
 
         return $this;
     }
+
+    public function getClientQuery(): array
+    {
+        return $this->clientQuery;
+    }
+
+    public function setClientQuery(array $clientQuery): void
+    {
+        $this->clientQuery = $clientQuery;
+    }
 }
