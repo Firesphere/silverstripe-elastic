@@ -11,6 +11,12 @@
 
 `composer require firesphere/elastic`
 
+### Requirements
+
+- PHP8+
+- Elasticsearch 8.10+
+- Silverstripe Framework 4 || 5
+
 ## Elastic search with Silverstripe
 
 This module provides an API similar to the [Solr Search](https://firesphere.github.io/solr-search) module.
