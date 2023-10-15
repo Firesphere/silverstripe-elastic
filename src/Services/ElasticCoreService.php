@@ -43,17 +43,7 @@ class ElasticCoreService extends BaseService
      */
     public function __construct()
     {
-        $config = self::config()->get('config');
-        if ($config['endpoint'] === 'ENVIRONMENT') {
-            $endpoint0 = [];
-            foreach (self::ENVIRONMENT_VARS as $envVar => $elasticVar) {
-                $endpoint0[$elasticVar] = Environment::getEnv($envVar);
-            }
-        } else {
-            $endpoint0 = $config['endpoint'][0];
-        }
-        // default to https
-        $endpoint0['protocol'] = $endpoint0['protocol'] ?? 'https';
+        $endpoint0 = $this->getEndpointConfig();
         $uri = str_replace(['https://', 'http://'], '', $endpoint0['host']);
         $uri = sprintf(
             '%s://%s:%s',
@@ -61,13 +51,7 @@ class ElasticCoreService extends BaseService
             $uri,
             $endpoint0['port'] ?: 9200
         );
-        $builder = ClientBuilder::create()
-            ->setHosts([$uri]);
-        if ($endpoint0['apiKey']) {
-            $builder->setApiKey($endpoint0['apiKey']);
-        } elseif ($endpoint0['username'] && $endpoint0['password']) {
-            $builder->setBasicAuthentication($endpoint0['username'], $endpoint0['password']);
-        }
+        $builder = $this->getBuilder($uri, $endpoint0);
         $this->client = $builder->build();
         parent::__construct(ElasticIndex::class);
     }
@@ -85,37 +69,23 @@ class ElasticCoreService extends BaseService
     /**
      * @param ElasticIndex $index
      * @param SS_List $items
+     * @return void|array
      * @throws NotFoundExceptionInterface
      * @throws ClientResponseException
      * @throws ServerResponseException
      */
-    public function updateIndex($index, $items)
+    public function updateIndex($index, $items, $returnDocs = false)
     {
         $fields = $index->getFieldsForIndexing();
         $factory = $this->getFactory($items);
         $docs = $factory->buildItems($fields, $index);
+        $body = ['body' => []];
         if (count($docs)) {
-            $body = [
-                'body' => [
-                    'index' => $index->getIndexName()
-                ]
-            ];
-            if (self::config()->get('pipeline')) {
-                $body['pipeline'] = self::config()->get('pipeline');
-            }
-            foreach ($docs as $doc) {
-                $body['body'][] = [
-                    'index' => [
-                        '_index' => $index->getIndexName(),
-                        '_id'    => $doc[self::ID_KEY]
-                    ]
-                ];
-                $doc['_extract_binary_content'] = true;
-                $doc['_reduce_whitespace'] = true;
-                $doc['_run_ml_inference'] = false;
-                $body['body'][] = $doc;
-            }
+            $body = $this->buildBody($docs, $index);
             $this->client->bulk($body);
+        }
+        if ($returnDocs ) {
+            return $body['body'];
         }
     }
 
@@ -134,5 +104,77 @@ class ElasticCoreService extends BaseService
         $factory->setDebug(true);
 
         return $factory;
+    }
+
+    /**
+     * @return array
+     */
+    private function getEndpointConfig(): array
+    {
+        $config = self::config()->get('config');
+        if ($config['endpoint'] === 'ENVIRONMENT') {
+            $endpoint0 = [];
+            foreach (self::ENVIRONMENT_VARS as $envVar => $elasticVar) {
+                $endpoint0[$elasticVar] = Environment::getEnv($envVar);
+            }
+        } else {
+            $endpoint0 = $config['endpoint'][0];
+        }
+        // default to https
+        $endpoint0['protocol'] = $endpoint0['protocol'] ?? 'https';
+
+        return $endpoint0;
+    }
+
+    /**
+     * @param string $uri
+     * @param array $endpoint0
+     * @return ClientBuilder
+     */
+    private function getBuilder(string $uri, array $endpoint0): ClientBuilder
+    {
+        $builder = ClientBuilder::create()
+            ->setHosts([$uri]);
+        if ($endpoint0['apiKey']) {
+            $builder->setApiKey($endpoint0['apiKey']);
+        } elseif ($endpoint0['username'] && $endpoint0['password']) {
+            $builder->setBasicAuthentication($endpoint0['username'], $endpoint0['password']);
+        }
+        // Disable the SSL Certificate check
+        if (Environment::getEnv('ELASTIC_DISABLE_SSLCHECK')) {
+            $builder->setSSLVerification(false);
+        }
+
+        return $builder;
+    }
+
+    /**
+     * @param array $docs
+     * @param ElasticIndex $index
+     * @return array
+     */
+    public function buildBody(array $docs, ElasticIndex $index): array
+    {
+        $body = ['body' => []];
+        if (self::config()->get('pipeline')) {
+            $body['body'] = [ // @todo Check if this is indeed how it works
+                'index'    => $index->getIndexName(),
+                'pipeline' => self::config()->get('pipeline')
+            ];
+        }
+        foreach ($docs as $doc) {
+            $body['body'][] = [
+                'index' => [
+                    '_index' => $index->getIndexName(),
+                    '_id'    => $doc[self::ID_KEY]
+                ]
+            ];
+            $doc['_extract_binary_content'] = true;
+            $doc['_reduce_whitespace'] = true;
+            $doc['_run_ml_inference'] = false;
+            $body['body'][] = $doc;
+        }
+
+        return $body;
     }
 }

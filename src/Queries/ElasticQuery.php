@@ -152,7 +152,7 @@ class ElasticQuery extends BaseQuery
         $this->orFilters = $orFilters;
     }
 
-    public function addOrFilters(string $key, array $orFilters): void
+    public function addOrFilters(string $key, string $orFilters): void
     {
         $this->orFilters[$key] = $orFilters;
     }
