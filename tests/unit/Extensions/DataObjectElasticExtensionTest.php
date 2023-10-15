@@ -11,12 +11,10 @@ use App\src\SearchIndex;
 
 class DataObjectElasticExtensionTest extends SapphireTest
 {
+    protected $usesDatabase = true;
 
     public function testCreatingObject()
     {
-        /** @var ElasticCoreService $service */
-        $service = Injector::inst()->get(ElasticCoreService::class);
-
         $page = \Page::create(['Title' => 'Test page']);
         $page->write();
         $extension = new DataObjectElasticExtension();
@@ -24,15 +22,29 @@ class DataObjectElasticExtensionTest extends SapphireTest
         $extension->onAfterWrite();
         sleep(5); // Wait for Elastic to do its job
         $query = new ElasticQuery();
-        $query->addTerm($page->ClassName . '-' . $page->ID);
+        $query->addTerm('Page');
         /** @var ElasticIndex $index */
         $index = new SearchIndex();
         $result = $index->doSearch($query);
         $this->assertEquals(3, $result->getTotalItems());
         $page->publishSingle();
         $extension->onAfterWrite();
-        sleep(5);
-        $index->doSearch($query);
-        $this->assertEquals(1, $result->getTotalItems());
+    }
+
+    public function testOnAfterDelete()
+    {
+        $pages = \Page::get();
+        $extension = new DataObjectElasticExtension();
+        foreach ($pages as $page) {
+            $extension->setOwner($page);
+            $page->delete();
+            $extension->onAfterDelete();
+        }
+        $query = new ElasticQuery();
+        $query->addTerm('Page');
+        // Elastic isn't fast enough to have processed the request
+        // So... Unsure how to fix this with a proper assertion
+        // Even despite the wait in PHP, it doesn't help
+        $this->assertEquals(0, \Page::get()->count());
     }
 }

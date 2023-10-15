@@ -1,5 +1,11 @@
-on: [push, pull_request]
-
+name: 'PHPUnit tests'
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
 jobs:
   test:
     runs-on: ubuntu-22.04
