@@ -160,27 +160,11 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * @return mixed
-     */
-    public function getQuery()
-    {
-        return $this->query;
-    }
-
-    /**
      * @param mixed $query
      */
     public function setQuery($query): void
     {
         $this->query = $query;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getIndex()
-    {
-        return $this->index;
     }
 
     /**

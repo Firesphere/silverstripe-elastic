@@ -84,7 +84,7 @@ class ElasticCoreService extends BaseService
             $body = $this->buildBody($docs, $index);
             $this->client->bulk($body);
         }
-        if ($returnDocs ) {
+        if ($returnDocs) {
             return $body['body'];
         }
     }
