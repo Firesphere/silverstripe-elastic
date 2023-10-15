@@ -79,7 +79,7 @@ class QueryBuilderTest extends SapphireTest
         $resultQuery = QueryBuilder::buildQuery($query, new SearchIndex());
 
         $expected = self::$expected_query;
-        $expected['should'] = [
+        $expected['body']['query']['bool']['should'] = [
             [
                 'match' => [
                     'SiteTree.Title' => [
