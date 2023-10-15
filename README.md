@@ -1,3 +1,7 @@
+[![PHPUnit tests](https://github.com/Firesphere/silverstripe-elastic/actions/workflows/unittests.yml/badge.svg?branch=main)](https://github.com/Firesphere/silverstripe-elastic/actions/workflows/unittests.yml)
+[![codecov](https://codecov.io/gh/Firesphere/silverstripe-elastic/graph/badge.svg?token=B8iPqvuOSo)](https://codecov.io/gh/Firesphere/silverstripe-elastic)
+[![Maintainability](https://api.codeclimate.com/v1/badges/92a58f5679dfe201d774/maintainability)](https://codeclimate.com/github/Firesphere/silverstripe-elastic/maintainability)
+
 # Modern Silverstripe Elastic search
 
 ### This module is made possible thanks to [Pikselin](https://pikselin.com)
