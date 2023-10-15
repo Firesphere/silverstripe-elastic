@@ -23,6 +23,39 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * @param ElasticQuery $query
      * @param ElasticIndex $index
+     * @return array
+     */
+    public static function buildQuery(BaseQuery $query, CoreIndex $index): array
+    {
+        $self = self::init($query, $index);
+        $filters = $self->getFilters($index, $query);
+        $orFilters = $self->getOrFilters($query);
+        $terms = $self->getUserQuery($query); // There's always a term
+        $filters = [
+            'filter' => [
+                'bool' => [
+                    'must'   => $filters,
+                    'should' => $orFilters
+                ],
+            ]
+        ];
+        $terms = array_merge($terms, $filters);
+
+        return [
+            'index' => $index->getIndexName(),
+            'from'  => $query->getStart(),
+            'size'  => $query->getRows(),
+            'body'  => [
+                'query' => [
+                    'bool' => $terms,
+                ],
+            ]
+        ];
+    }
+
+    /**
+     * @param ElasticQuery $query
+     * @param ElasticIndex $index
      * @return self
      */
     protected static function init(ElasticQuery $query, ElasticIndex $index): self
@@ -35,35 +68,19 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * @param ElasticQuery $query
-     * @param ElasticIndex $index
-     * @return array
+     * @param mixed $index
      */
-    public static function buildQuery(BaseQuery $query, CoreIndex $index): array
+    public function setIndex($index): void
     {
-        $self = self::init($query, $index);
-        $filters = $self->getFilters($index, $query);
-        $orFilters = $self->getOrFilters($query);
-        // Always primarily search against the _text field, that's where all content is
-        $terms = $self->getUserQuery($query); // There's always a term
-        if (count($filters)) {
-            $filters = ['filter' => ['bool' => ['must' => $filters]]];
-            $terms = array_merge($terms, $filters);
-        }
-        if (count($orFilters)) {
-            $terms['filter']['bool']['should'] = $orFilters;
-        }
+        $this->index = $index;
+    }
 
-        return [
-            'index' => $index->getIndexName(),
-            'from'  => $query->getStart(),
-            'size'  => $query->getRows(),
-            'body'  => [
-                'query' => [
-                    'bool' => $terms,
-                ],
-            ]
-        ];
+    /**
+     * @param mixed $query
+     */
+    public function setQuery($query): void
+    {
+        $this->query = $query;
     }
 
     /**
@@ -157,22 +174,6 @@ class QueryBuilder implements QueryBuilderInterface
         }
 
         return $q;
-    }
-
-    /**
-     * @param mixed $query
-     */
-    public function setQuery($query): void
-    {
-        $this->query = $query;
-    }
-
-    /**
-     * @param mixed $index
-     */
-    public function setIndex($index): void
-    {
-        $this->index = $index;
     }
 
     /**
