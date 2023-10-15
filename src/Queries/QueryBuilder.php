@@ -126,7 +126,9 @@ class QueryBuilder implements QueryBuilderInterface
         }
         foreach ($terms as $term) {
             $q['must'][] = ['match' => ['_text' => $term['text']]];
-            $q = $this->getFieldBoosting($term, $type, $q);
+            if ($type !== 'wildcard') {
+                $q = $this->getFieldBoosting($term, $type, $q);
+            }
         }
 
         return $q;
