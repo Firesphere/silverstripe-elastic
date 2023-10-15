@@ -4,6 +4,7 @@ namespace Firesphere\ElasticSearch\Queries;
 
 use App\src\SearchIndex;
 use Firesphere\ElasticSearch\Queries\Builders\QueryBuilder;
+use Firesphere\StickerTrade\Indexes\ElasticStickerIndex;
 use SilverStripe\Dev\SapphireTest;
 
 class QueryBuilderTest extends SapphireTest

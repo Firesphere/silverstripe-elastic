@@ -29,16 +29,7 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $self = self::init($query, $index);
         $filters = $self->getFilters($index, $query);
-        $orFilters = $self->getOrFilters($query);
         $terms = $self->getUserQuery($query); // There's always a term
-        $filters = [
-            'filter' => [
-                'bool' => [
-                    'must'   => $filters,
-                    'should' => $orFilters
-                ],
-            ]
-        ];
         $terms = array_merge($terms, $filters);
 
         return [
@@ -84,12 +75,30 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * Required must-be filters if they're here.
-     * @param CoreIndex|ElasticIndex $index
-     * @param ElasticQuery|BaseQuery $query
+     * Build the `OR` and `AND` filters
+     * @param ElasticIndex $index
+     * @param ElasticQuery $query
      * @return array[]
      */
-    private function getFilters(CoreIndex|ElasticIndex $index, ElasticQuery|BaseQuery $query): array
+    private function getFilters(ElasticIndex $index, ElasticQuery $query): array
+    {
+        return [
+            'filter' => [
+                'bool' => [
+                    'must'   => $this->getAndFilters($index, $query),
+                    'should' => $this->getOrFilters($query)
+                ],
+            ]
+        ];
+    }
+
+    /**
+     * Required must-be filters if they're here.
+     * @param ElasticIndex $index
+     * @param ElasticQuery $query
+     * @return array[]
+     */
+    private function getAndFilters(ElasticIndex $index, ElasticQuery $query): array
     {
         // Default,
         $filters = [
@@ -111,10 +120,10 @@ class QueryBuilder implements QueryBuilderInterface
 
     /**
      * Create the "should" filter, that is OR instead of AND
-     * @param BaseQuery $query
+     * @param ElasticQuery $query
      * @return array
      */
-    private function getOrFilters(BaseQuery $query)
+    private function getOrFilters(ElasticQuery $query): array
     {
         $filters = [];
         if (count($query->getOrFilters())) {
