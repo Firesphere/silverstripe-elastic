@@ -106,7 +106,7 @@ class ElasticQuery extends BaseQuery
      * For generic boosting, use @addBoostedField($field, $boost), this will add the boost at Index time
      *
      */
-    public function addTerm(string $term, array $fields = [], int $boost = 0, $fuzzy = null): self
+    public function addTerm(string $term, array $fields = [], int $boost = 1, $fuzzy = null): self
     {
         $this->terms[] = [
             'text'   => $term,

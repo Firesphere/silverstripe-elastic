@@ -125,10 +125,8 @@ class QueryBuilder implements QueryBuilderInterface
             $terms = ['*'];
         }
         foreach ($terms as $term) {
-            $q['must'] = ['match' => ['_text' => $term['text']]];
-            if (count($term['fields'])) {
-                $q = $this->getFieldBoosting($term, $type, $q);
-            }
+            $q['must'][] = ['match' => ['_text' => $term['text']]];
+            $q = $this->getFieldBoosting($term, $type, $q);
         }
 
         return $q;
@@ -144,8 +142,10 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $shoulds = [];
         $queryBoosts = $this->query->getBoostedFields();
-        foreach ($term['fields'] as $field) {
-            $shoulds[] = $this->addShould($type, $field, $term['text'], $term['boost']);
+        if ($term['boost'] > 1 && count($term['fields'])) {
+            foreach ($term['fields'] as $field) {
+                $shoulds[] = $this->addShould($type, $field, $term['text'], $term['boost']);
+            }
         }
         foreach ($queryBoosts as $field => $boost) {
             $shoulds[] = $this->addShould($type, $field, $term['text'], $boost);
