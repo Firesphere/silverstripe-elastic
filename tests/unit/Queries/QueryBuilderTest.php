@@ -4,7 +4,6 @@ namespace Firesphere\ElasticSearch\Queries;
 
 use App\src\SearchIndex;
 use Firesphere\ElasticSearch\Queries\Builders\QueryBuilder;
-use Firesphere\StickerTrade\Indexes\ElasticStickerIndex;
 use SilverStripe\Dev\SapphireTest;
 
 class QueryBuilderTest extends SapphireTest
@@ -20,16 +19,6 @@ class QueryBuilderTest extends SapphireTest
                         [
                             'match' => [
                                 '_text' => 'TestSearch'
-                            ]
-                        ]
-                    ],
-                    'should' => [
-                        [
-                            'match' => [
-                                'SiteTree.Title' => [
-                                    'query' => 'TestSearch',
-                                    'boost' => 2
-                                ]
                             ]
                         ]
                     ],
@@ -89,6 +78,18 @@ class QueryBuilderTest extends SapphireTest
 
         $resultQuery = QueryBuilder::buildQuery($query, new SearchIndex());
 
-        $this->assertEquals(self::$expected_query, $resultQuery);
+        $expected = self::$expected_query;
+        $expected['should'] = [
+            [
+                'match' => [
+                    'SiteTree.Title' => [
+                        'query' => 'TestSearch',
+                        'boost' => 2
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expected, $resultQuery);
     }
 }
