@@ -1,0 +1,19 @@
+checks:
+  php: true
+
+build:
+  image: default-jammy
+  environment:
+    php: 8.1.2
+  dependencies:
+    before:
+      - composer  config --no-plugins allow-plugins.composer/installers true
+  nodes:
+    analysis:
+      tests:
+        override: [php-scrutinizer-run]
+      cache:
+        directories:
+          - vendor/
+filter:
+  paths: ["src/*"]
