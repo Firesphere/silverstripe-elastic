@@ -19,4 +19,9 @@ jobs:
       - run: cp .github/assets/SearchIndex.php.test app/src/SearchIndex.php
       - run: cp example.env .env
       - run: ddev sake dev/build
-      - run: ddev exec phpunit tests
+      - run: ddev xdebug
+      - run: ddev exec phpunit tests --coverage-clover ./coverage.xml
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
