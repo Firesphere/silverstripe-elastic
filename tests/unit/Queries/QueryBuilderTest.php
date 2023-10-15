@@ -2,9 +2,10 @@
 
 namespace Firesphere\ElasticSearch\Queries;
 
+use App\src\SearchIndex;
 use Firesphere\ElasticSearch\Queries\Builders\QueryBuilder;
 use SilverStripe\Dev\SapphireTest;
-use App\src\SearchIndex;
+
 class QueryBuilderTest extends SapphireTest
 {
     protected static $expected_query = [
@@ -29,7 +30,7 @@ class QueryBuilderTest extends SapphireTest
                                         'ViewStatus' => [
                                             "null",
                                             'LoggedIn'
-                                        ]
+                                        ],
                                     ]
                                 ],
                                 [
@@ -65,11 +66,30 @@ class QueryBuilderTest extends SapphireTest
 
         $this->assertEquals('Home', $query->getFilters()['SiteTree.Title']);
         $this->assertEquals('Away', $query->getOrFilters()['SiteTree.Title']);
-        $this->assertEquals([['text' => 'TestSearch', 'fields' => []]], $query->getTerms());
+        $this->assertEquals([['text' => 'TestSearch', 'fields' => [], 'boost' => 1]], $query->getTerms());
 
-        $query = QueryBuilder::buildQuery($query, new SearchIndex());
+        $resultQuery = QueryBuilder::buildQuery($query, new SearchIndex());
 
-        $this->assertEquals(self::$expected_query, $query);
+        $this->assertEquals(self::$expected_query, $resultQuery);
 
+        $query->addBoostedField('SiteTree.Title', 2);
+
+        $this->assertEquals(['SiteTree.Title' => 2], $query->getBoostedFields());
+
+        $resultQuery = QueryBuilder::buildQuery($query, new SearchIndex());
+
+        $expected = self::$expected_query;
+        $expected['body']['query']['bool']['should'] = [
+            [
+                'match' => [
+                    'SiteTree.Title' => [
+                        'query' => 'TestSearch',
+                        'boost' => 2
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expected, $resultQuery);
     }
 }

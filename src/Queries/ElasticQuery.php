@@ -37,6 +37,11 @@ class ElasticQuery extends BaseQuery
     protected $terms = [];
 
     /**
+     * @var array
+     */
+    protected $boostedFields = [];
+
+    /**
      * Get the sort fields
      *
      * @return array
@@ -101,11 +106,12 @@ class ElasticQuery extends BaseQuery
      * For generic boosting, use @addBoostedField($field, $boost), this will add the boost at Index time
      *
      */
-    public function addTerm(string $term, array $fields = [], int $boost = 0, $fuzzy = null): self
+    public function addTerm(string $term, array $fields = [], int $boost = 1, $fuzzy = null): self
     {
         $this->terms[] = [
             'text'   => $term,
-            'fields' => $fields
+            'fields' => $fields,
+            'boost'  => $boost
         ];
 
         return $this;
@@ -155,5 +161,20 @@ class ElasticQuery extends BaseQuery
     public function addOrFilters(string $key, string $orFilters): void
     {
         $this->orFilters[$key] = $orFilters;
+    }
+
+    public function getBoostedFields(): array
+    {
+        return $this->boostedFields;
+    }
+
+    public function setBoostedFields(array $boostedFields): void
+    {
+        $this->boostedFields = $boostedFields;
+    }
+
+    public function addBoostedField($key, $value)
+    {
+        $this->boostedFields[$key] = $value;
     }
 }

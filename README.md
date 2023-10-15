@@ -1,6 +1,7 @@
 [![PHPUnit tests](https://github.com/Firesphere/silverstripe-elastic/actions/workflows/unittests.yml/badge.svg?branch=main)](https://github.com/Firesphere/silverstripe-elastic/actions/workflows/unittests.yml)
 [![codecov](https://codecov.io/gh/Firesphere/silverstripe-elastic/graph/badge.svg?token=B8iPqvuOSo)](https://codecov.io/gh/Firesphere/silverstripe-elastic)
 [![Maintainability](https://api.codeclimate.com/v1/badges/92a58f5679dfe201d774/maintainability)](https://codeclimate.com/github/Firesphere/silverstripe-elastic/maintainability)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Firesphere/silverstripe-elastic/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/Firesphere/silverstripe-elastic/?branch=main)
 
 # Modern Silverstripe Elastic search
 
@@ -30,13 +31,13 @@ Configuration is done in YML:
 Name: MyElastic
 ---
 Firesphere\ElasticSearch\Services\ElasticCoreService:
-    config:
-        endpoint:
-            -   host: "https://my-elasticinstance.elastic-cloud.com"
-                apiKey: "mybase64apikeyhere==="
-                username: "Elastic"
-                password: "mysupersecretpassword"
-                port: 443
+  config:
+    endpoint:
+      - host: "https://my-elasticinstance.elastic-cloud.com"
+        apiKey: "mybase64apikeyhere==="
+        username: "Elastic"
+        password: "mysupersecretpassword"
+        port: 443
 ```
 
 Take special note of the port. When using your own Elastic instance, this might be the standard port 9200.
@@ -62,8 +63,8 @@ And in your YML:
 Name: MyElastic
 ---
 Firesphere\ElasticSearch\Services\ElasticCoreService:
-    config:
-        endpoint: ENVIRONMENT
+  config:
+    endpoint: ENVIRONMENT
 ```
 
 ### Creating an index
