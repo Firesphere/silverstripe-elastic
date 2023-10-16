@@ -124,7 +124,9 @@ class DataObjectElasticExtension extends DataExtension
         }
 
         // @codeCoverageIgnoreStart Elastic during tests isn't fast enough to pick this up properly
-        if ($this->owner->isChanged('ShowInSearch') && !$this->owner->ShowInSearch) {
+        if ($this->owner->hasField('ShowInSearch') &&
+            $this->owner->isChanged('ShowInSearch') &&
+            !$this->owner->ShowInSearch) {
             $this->deleteFromElastic();
         }
         // @codeCoverageIgnoreEnd
