@@ -10,6 +10,9 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\PaginatedList;
 
+/**
+ * @package Firesphere\Elastic\Tests
+ */
 class EndToEndTest extends SapphireTest
 {
     public function testSearching()

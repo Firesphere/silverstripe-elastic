@@ -5,6 +5,9 @@ namespace Firesphere\ElasticSearch\Tests;
 use Firesphere\ElasticSearch\Models\SynonymSet;
 use SilverStripe\Dev\SapphireTest;
 
+/**
+ * @package Firesphere\Elastic\Tests
+ */
 class SynonymSetTest extends SapphireTest
 {
     protected $usesDatabase = true;

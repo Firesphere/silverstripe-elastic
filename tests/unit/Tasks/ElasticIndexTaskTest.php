@@ -8,6 +8,9 @@ use Psr\Log\LoggerInterface;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\SapphireTest;
 
+/**
+ * @package Firesphere\Elastic\Tests
+ */
 class ElasticIndexTaskTest extends SapphireTest
 {
     protected $usesDatabase = true;

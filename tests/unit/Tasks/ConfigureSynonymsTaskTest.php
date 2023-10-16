@@ -8,6 +8,9 @@ use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 
+/**
+ * @package Firesphere\Elastic\Tests
+ */
 class ConfigureSynonymsTaskTest extends SapphireTest
 {
     protected $usesDatabase = true;

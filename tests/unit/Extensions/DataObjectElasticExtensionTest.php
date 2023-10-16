@@ -8,6 +8,9 @@ use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use SilverStripe\Dev\SapphireTest;
 
+/**
+ * @package Firesphere\Elastic\Tests
+ */
 class DataObjectElasticExtensionTest extends SapphireTest
 {
     protected $usesDatabase = true;
