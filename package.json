@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "docs": "markdown-folder-to-html"
+  },
+  "dependencies": {
+    "markdown-folder-to-html": "^2.4.0"
+  }
+}

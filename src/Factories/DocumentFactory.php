@@ -1,4 +1,11 @@
 <?php
+/**
+ * class DocumentFactory|Firesphere\ElasticSearch\Factories\DocumentFactory Build a Solarium document to push
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Factories;
 
@@ -18,9 +25,9 @@ use SilverStripe\ORM\FieldType\DBField;
 
 /**
  * Class DocumentFactory
- * Factory to create documents to be pushed to Solr
+ * Factory to create documents to be pushed to Elastic
  *
- * @package Firesphere\Elastic\Search
+ *  Firesphere\Elastic\Search
  */
 class DocumentFactory extends DocumentCoreFactory
 {
@@ -86,7 +93,7 @@ class DocumentFactory extends DocumentCoreFactory
     }
 
     /**
-     * Add a single field to the Solr index
+     * Add a single field to the Elastic index
      *
      * @param array $doc Elastic Document
      * @param DataObject $object Object whose field is to be added

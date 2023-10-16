@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * class SynonymSet|Firesphere\ElasticSearch\Models\SynonymSet Index items from the CMS through a QueuedJob
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 namespace Firesphere\ElasticSearch\Models;
 
 use SilverStripe\ORM\DataObject;
