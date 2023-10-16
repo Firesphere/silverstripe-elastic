@@ -45,9 +45,4 @@ class DataObjectElasticExtensionTest extends SapphireTest
         // Even despite the wait in PHP, it doesn't help
         $this->assertEquals(0, \Page::get()->count());
     }
-
-    public function testUntickShowInSearch()
-    {
-
-    }
 }

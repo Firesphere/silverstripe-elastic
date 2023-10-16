@@ -66,7 +66,7 @@ class DataObjectElasticExtension extends DataExtension
      * @param mixed $index
      * @return array
      */
-    public function getDeleteQuery(mixed $index): array
+    private function getDeleteQuery(mixed $index): array
     {
         return [
             'index' => $index,
@@ -115,9 +115,12 @@ class DataObjectElasticExtension extends DataExtension
         ) {
             $this->doIndex();
         }
+
+        // @codeCoverageIgnoreStart Elastic during tests isn't fast enough to pick this up properly
         if ($this->owner->isChanged('ShowInSearch') && !$this->owner->ShowInSearch) {
             $this->deleteFromElastic();
         }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
