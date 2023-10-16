@@ -3,6 +3,6 @@ repository: ddev/ddev-elasticsearch
 version: v0.2.0
 install_date: "2023-10-13T15:08:20+13:00"
 project_files:
-    - docker-compose.elasticsearch.yaml
-global_files: []
-removal_actions: []
+  - docker-compose.elasticsearch.yaml
+global_files: [ ]
+removal_actions: [ ]

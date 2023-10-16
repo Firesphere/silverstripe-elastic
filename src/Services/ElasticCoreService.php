@@ -56,6 +56,48 @@ class ElasticCoreService extends BaseService
         parent::__construct(ElasticIndex::class);
     }
 
+    /**
+     * @return array
+     */
+    private function getEndpointConfig(): array
+    {
+        $config = self::config()->get('config');
+        if ($config['endpoint'] === 'ENVIRONMENT') {
+            $endpoint0 = [];
+            foreach (self::ENVIRONMENT_VARS as $envVar => $elasticVar) {
+                $endpoint0[$elasticVar] = Environment::getEnv($envVar);
+            }
+        } else {
+            $endpoint0 = $config['endpoint'][0];
+        }
+        // default to https
+        $endpoint0['protocol'] = $endpoint0['protocol'] ?? 'https';
+
+        return $endpoint0;
+    }
+
+    /**
+     * @param string $uri
+     * @param array $endpoint0
+     * @return ClientBuilder
+     */
+    private function getBuilder(string $uri, array $endpoint0): ClientBuilder
+    {
+        $builder = ClientBuilder::create()
+            ->setHosts([$uri]);
+        if ($endpoint0['apiKey']) {
+            $builder->setApiKey($endpoint0['apiKey']);
+        } elseif ($endpoint0['username'] && $endpoint0['password']) {
+            $builder->setBasicAuthentication($endpoint0['username'], $endpoint0['password']);
+        }
+        // Disable the SSL Certificate check
+        if (Environment::getEnv('ELASTIC_DISABLE_SSLCHECK')) {
+            $builder->setSSLVerification(false);
+        }
+
+        return $builder;
+    }
+
     public function getClient(): Client
     {
         return $this->client;
@@ -107,48 +149,6 @@ class ElasticCoreService extends BaseService
     }
 
     /**
-     * @return array
-     */
-    private function getEndpointConfig(): array
-    {
-        $config = self::config()->get('config');
-        if ($config['endpoint'] === 'ENVIRONMENT') {
-            $endpoint0 = [];
-            foreach (self::ENVIRONMENT_VARS as $envVar => $elasticVar) {
-                $endpoint0[$elasticVar] = Environment::getEnv($envVar);
-            }
-        } else {
-            $endpoint0 = $config['endpoint'][0];
-        }
-        // default to https
-        $endpoint0['protocol'] = $endpoint0['protocol'] ?? 'https';
-
-        return $endpoint0;
-    }
-
-    /**
-     * @param string $uri
-     * @param array $endpoint0
-     * @return ClientBuilder
-     */
-    private function getBuilder(string $uri, array $endpoint0): ClientBuilder
-    {
-        $builder = ClientBuilder::create()
-            ->setHosts([$uri]);
-        if ($endpoint0['apiKey']) {
-            $builder->setApiKey($endpoint0['apiKey']);
-        } elseif ($endpoint0['username'] && $endpoint0['password']) {
-            $builder->setBasicAuthentication($endpoint0['username'], $endpoint0['password']);
-        }
-        // Disable the SSL Certificate check
-        if (Environment::getEnv('ELASTIC_DISABLE_SSLCHECK')) {
-            $builder->setSSLVerification(false);
-        }
-
-        return $builder;
-    }
-
-    /**
      * @param array $docs
      * @param ElasticIndex $index
      * @return array
@@ -158,8 +158,8 @@ class ElasticCoreService extends BaseService
         $body = ['body' => []];
         if (self::config()->get('pipeline')) {
             $body['body'] = [ // @todo Check if this is indeed how it works
-                'index'    => $index->getIndexName(),
-                'pipeline' => self::config()->get('pipeline')
+                              'index'    => $index->getIndexName(),
+                              'pipeline' => self::config()->get('pipeline')
             ];
         }
         foreach ($docs as $doc) {

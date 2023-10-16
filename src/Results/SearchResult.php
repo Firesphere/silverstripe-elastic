@@ -61,17 +61,17 @@ class SearchResult extends ViewableData implements SearchResultInterface
         $result = $result->asObject();
 
         $this->setMatches($result->hits->hits)
-            ->setSpellcheck($resultArray['suggest'])
+            ->setSpellcheck($resultArray['suggest'] ?? [])
             ->setTotalItems($result->hits->total->value);
     }
 
     /**
      * Set the spellcheck list as an ArrayList
      *
-     * @param array|null $spellcheck
+     * @param array $spellcheck
      * @return SearchResult
      */
-    public function setSpellcheck($spellcheck): self
+    private function setSpellcheck($spellcheck): self
     {
         $spellcheckList = [];
 
@@ -80,7 +80,7 @@ class SearchResult extends ViewableData implements SearchResultInterface
                 foreach ($suggestion as $suggest) {
                     foreach ($suggest['options'] as $option) {
                         $spellcheckList[] = ArrayData::create([
-                            'original' => $suggest['text'],
+                            'original'   => $suggest['text'],
                             'suggestion' => $option['text'],
                         ]);
                     }

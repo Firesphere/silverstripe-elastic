@@ -2,12 +2,10 @@
 
 namespace Firesphere\ElasticSearch\Extensions;
 
+use App\src\SearchIndex;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
-use Firesphere\ElasticSearch\Services\ElasticCoreService;
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
-use App\src\SearchIndex;
 
 class DataObjectElasticExtensionTest extends SapphireTest
 {

@@ -13,7 +13,7 @@ class QueryBuilderTest extends SapphireTest
         'from'  => 0,
         'size'  => 10,
         'body'  => [
-            'query' => [
+            'query'     => [
                 'bool' => [
                     'must'   => [
                         [
@@ -55,7 +55,7 @@ class QueryBuilderTest extends SapphireTest
                 ]
             ],
             'highlight' => [],
-            'suggest' => [
+            'suggest'   => [
                 '0-fullterm' => [
                     'text' => 'TestSearch',
                     'term' => [
