@@ -17,6 +17,7 @@ use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Firesphere\ElasticSearch\Factories\DocumentFactory;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\SearchBackend\Services\BaseService;
+use http\Env;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionException;
 use SilverStripe\Core\Config\Configurable;
@@ -80,6 +81,9 @@ class ElasticCoreService extends BaseService
         if ($config['endpoint'] === 'ENVIRONMENT') {
             $endpoint0 = [];
             foreach (self::ENVIRONMENT_VARS as $envVar => $elasticVar) {
+                if (!Environment::hasEnv($envVar)) {
+                    continue; // skip vars not set
+                }
                 $endpoint0[$elasticVar] = Environment::getEnv($envVar);
             }
         } else {
@@ -102,7 +106,8 @@ class ElasticCoreService extends BaseService
             ->setHosts([$uri]);
         if (isset($endpoint0['apiKey'])) {
             $builder->setApiKey($endpoint0['apiKey']);
-        } elseif (isset($endpoint0['username']) && isset($endpoint0['password'])) {
+        }
+        if (isset($endpoint0['username']) && isset($endpoint0['password'])) {
             $builder->setBasicAuthentication($endpoint0['username'], $endpoint0['password']);
         }
         // Disable the SSL Certificate check
