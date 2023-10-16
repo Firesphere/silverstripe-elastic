@@ -54,7 +54,8 @@ class QueryBuilderTest extends SapphireTest
                         ]
                     ]
                 ]
-            ]
+            ],
+            'highlight' => []
         ]
     ];
 
@@ -64,6 +65,7 @@ class QueryBuilderTest extends SapphireTest
         $query->addTerm('TestSearch');
         $query->addFilter('SiteTree.Title', 'Home');
         $query->addOrFilters('SiteTree.Title', 'Away');
+        $query->setHighlight(false);
 
         $this->assertEquals('Home', $query->getFilters()['SiteTree.Title']);
         $this->assertEquals('Away', $query->getOrFilters()['SiteTree.Title']);
@@ -92,5 +94,10 @@ class QueryBuilderTest extends SapphireTest
         ];
 
         $this->assertEquals($expected, $resultQuery);
+
+        $query->setHighlight(true);
+        $resultQuery = QueryBuilder::buildQuery($query, new SearchIndex());
+
+        $this->assertArrayHasKey('highlight', $resultQuery['body']);
     }
 }
