@@ -2,6 +2,7 @@
 
 namespace Firesphere\ElasticSearch\Tasks;
 
+use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\HTTPRequest;
@@ -24,11 +25,14 @@ class ElasticIndexTaskTest extends SapphireTest
 
     public function testRun()
     {
-        \Page::create(['Title' => 'Testing title'])->write();
+        $page = \Page::create(['Title' => 'Testing title']);
+        $page->write();
+        $page->publishSingle();
         $task = new ElasticIndexTask();
         $request = new HTTPRequest('GET', 'dev/tasks/ElasticIndexTask');
         $result = $task->run($request);
 
         $this->assertGreaterThan(0, $result);
+        $this->assertinstanceOf(ElasticIndex::class, $task->getIndex());
     }
 }
