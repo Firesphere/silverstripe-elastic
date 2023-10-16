@@ -9,6 +9,8 @@ use SilverStripe\Dev\SapphireTest;
 
 class ElasticIndexTaskTest extends SapphireTest
 {
+    protected $usesDatabase = true;
+
     public function testConstruct()
     {
         $task = new ElasticIndexTask();
@@ -22,6 +24,7 @@ class ElasticIndexTaskTest extends SapphireTest
 
     public function testRun()
     {
+        \Page::create(['Title' => 'Testing title'])->write();
         $task = new ElasticIndexTask();
         $request = new HTTPRequest('GET', 'dev/tasks/ElasticIndexTask');
         $result = $task->run($request);
