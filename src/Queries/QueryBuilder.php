@@ -226,7 +226,6 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $terms = $this->query->getTerms();
         $suggest = [];
-        $i = 0;
         $base = [
             'term' => ['field' => '_text']
         ];
@@ -235,9 +234,9 @@ class QueryBuilder implements QueryBuilderInterface
             $suggest[$j . '-fullterm'] = $base;
             if (str_contains(' ', $term['text'])) {
                 $termArray = explode(' ', $term['text']);
-                foreach ($termArray as $word) {
-                    $base['text'] = $term['text'];
-                    $suggest[$i++ . '-suggest'] = $base;
+                foreach ($termArray as $i => $word) {
+                    $base['text'] = $word;
+                    $suggest[$i . '-partterm'] = $base;
                 }
             }
         }

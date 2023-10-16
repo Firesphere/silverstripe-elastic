@@ -69,6 +69,7 @@ class QueryBuilderTest extends SapphireTest
     public function testBuildQuery()
     {
         $query = new ElasticQuery();
+        $idx = new SearchIndex();
         $query->addTerm('TestSearch');
         $query->addFilter('SiteTree.Title', 'Home');
         $query->addOrFilters('SiteTree.Title', 'Away');
@@ -78,7 +79,7 @@ class QueryBuilderTest extends SapphireTest
         $this->assertEquals('Away', $query->getOrFilters()['SiteTree.Title']);
         $this->assertEquals([['text' => 'TestSearch', 'fields' => [], 'boost' => 1]], $query->getTerms());
 
-        $resultQuery = QueryBuilder::buildQuery($query, new SearchIndex());
+        $resultQuery = QueryBuilder::buildQuery($query, $idx);
 
         $this->assertEquals(self::$expected_query, $resultQuery);
 
@@ -86,7 +87,7 @@ class QueryBuilderTest extends SapphireTest
 
         $this->assertEquals(['SiteTree.Title' => 2], $query->getBoostedFields());
 
-        $resultQuery = QueryBuilder::buildQuery($query, new SearchIndex());
+        $resultQuery = QueryBuilder::buildQuery($query, $idx);
 
         $expected = self::$expected_query;
         $expected['body']['query']['bool']['should'] = [
@@ -103,8 +104,15 @@ class QueryBuilderTest extends SapphireTest
         $this->assertEquals($expected, $resultQuery);
 
         $query->setHighlight(true);
-        $resultQuery = QueryBuilder::buildQuery($query, new SearchIndex());
+        $resultQuery = QueryBuilder::buildQuery($query, $idx);
 
         $this->assertArrayHasKey('highlight', $resultQuery['body']);
+        
+        $query->addTerm('Test Tset');
+        $resultQuery = QueryBuilder::buildQuery($query, $idx);
+
+        $this->assertContains('Test', $resultQuery['body']['suggest']['1-partterm']);
+        $this->assertContains('Tset', $resultQuery['body']['suggest']['2-partterm']);
+        $this->assertContains('Test Tset', $resultQuery['body']['suggest']['1-fullterm']);
     }
 }
