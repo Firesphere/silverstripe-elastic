@@ -42,6 +42,11 @@ class ElasticQuery extends BaseQuery
     protected $boostedFields = [];
 
     /**
+     * @var bool
+     */
+    protected $highlight = true;
+
+    /**
      * Get the sort fields
      *
      * @return array
@@ -176,5 +181,15 @@ class ElasticQuery extends BaseQuery
     public function addBoostedField($key, $value)
     {
         $this->boostedFields[$key] = $value;
+    }
+
+    public function isHighlight(): bool
+    {
+        return $this->highlight;
+    }
+
+    public function setHighlight(bool $highlight): void
+    {
+        $this->highlight = $highlight;
     }
 }

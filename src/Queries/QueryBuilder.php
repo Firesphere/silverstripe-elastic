@@ -37,9 +37,10 @@ class QueryBuilder implements QueryBuilderInterface
             'from'  => $query->getStart(),
             'size'  => $query->getRows(),
             'body'  => [
-                'query' => [
+                'query'     => [
                     'bool' => $terms,
                 ],
+                'highlight' => $self->getHighlighter()
             ]
         ];
     }
@@ -204,5 +205,19 @@ class QueryBuilder implements QueryBuilderInterface
         ];
 
         return $should;
+    }
+
+    private function getHighlighter(): array
+    {
+        if ($this->query->isHighlight()) {
+            $highlights = [];
+            foreach ($this->index->getFulltextFields() as $field) {
+                $highlights[$field] = ['type' => 'unified'];
+            }
+            return ['fields' => $highlights]
+                ;
+        }
+
+        return [];
     }
 }
