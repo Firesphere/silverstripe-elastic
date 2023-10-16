@@ -7,7 +7,7 @@
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
  */
 
-namespace Firesphere\Elasticsearch\Helpers;
+namespace Firesphere\ElasticSearch\Helpers;
 
 use Firesphere\SearchBackend\Helpers\SearchLogger;
 
