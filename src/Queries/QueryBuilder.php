@@ -40,7 +40,8 @@ class QueryBuilder implements QueryBuilderInterface
                 'query'     => [
                     'bool' => $terms,
                 ],
-                'highlight' => $self->getHighlighter()
+                'highlight' => $self->getHighlighter(),
+                'suggest'   => $self->suggestList()
             ]
         ];
     }
@@ -214,10 +215,33 @@ class QueryBuilder implements QueryBuilderInterface
             foreach ($this->index->getFulltextFields() as $field) {
                 $highlights[$field] = ['type' => 'unified'];
             }
-            return ['fields' => $highlights]
-                ;
+
+            return ['fields' => $highlights];
         }
 
         return [];
+    }
+
+    private function suggestList()
+    {
+        $terms = $this->query->getTerms();
+        $suggest = [];
+        $i = 0;
+        $base = [
+            'term' => ['field' => '_text']
+        ];
+        foreach ($terms as $j => $term) {
+            $base['text'] = $term['text'];
+            $suggest[$j . '-fullterm'] = $base;
+            if (str_contains(' ', $term['text'])) {
+                $termArray = explode(' ', $term['text']);
+                foreach ($termArray as $word) {
+                    $base['text'] = $term['text'];
+                    $suggest[$i++ . '-suggest'] = $base;
+                }
+            }
+        }
+
+        return $suggest;
     }
 }

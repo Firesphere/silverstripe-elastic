@@ -38,6 +38,11 @@ class SearchResult extends ViewableData implements SearchResultInterface
     protected $matches;
 
     /**
+     * @var Elasticsearch
+     */
+    protected $elasticResult;
+
+    /**
      * SearchResult constructor.
      * Funnily enough, the $result contains the actual results, and has methods for the other things.
      * See Solarium docs for this.
@@ -51,44 +56,32 @@ class SearchResult extends ViewableData implements SearchResultInterface
         parent::__construct();
         $this->index = $index;
         $this->query = $query;
+        $this->elasticResult = $result;
+        $resultArray = $result->asArray();
         $result = $result->asObject();
-        //        if ($query->hasSpellcheck()) {
-        //            $this->setSpellcheck($result->getSpellcheck())
-        //                ->setCollatedSpellcheck($result->getSpellcheck());
-        //        }
+
         $this->setMatches($result->hits->hits)
+            ->setSpellcheck($resultArray['suggest'])
             ->setTotalItems($result->hits->total->value);
-    }
-
-    /**
-     * Set the collated spellcheck string
-     *
-     * @param mixed $collatedSpellcheck
-     * @return $this
-     */
-    public function setCollatedSpellcheck($collatedSpellcheck): self
-    {
-        /** @var Collation $collated */
-        if (!$this->index->isRetry() && $collatedSpellcheck && ($collated = $collatedSpellcheck->getCollations())) {
-            $this->collatedSpellcheck = $collated[0]->getQuery();
-        }
-
-        return $this;
     }
 
     /**
      * Set the spellcheck list as an ArrayList
      *
-     * @param SpellcheckResult|null $spellcheck
+     * @param array|null $spellcheck
      * @return SearchResult
      */
     public function setSpellcheck($spellcheck): self
     {
         $spellcheckList = [];
 
-        if ($spellcheck && ($suggestions = $spellcheck->getSuggestion(0))) {
-            foreach ($suggestions->getWords() as $suggestion) {
-                $spellcheckList[] = ArrayData::create($suggestion);
+        if (count($spellcheck)) {
+            foreach ($spellcheck as $suggestion) {
+                foreach ($suggestion as $suggest) {
+                    foreach ($suggest['options'] as $option) {
+                        $spellcheckList[] = ArrayData::create([$suggest['text'] => $option['text']]);
+                    }
+                }
             }
         }
 
