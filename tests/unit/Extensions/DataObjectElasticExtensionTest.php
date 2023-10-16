@@ -35,8 +35,8 @@ class DataObjectElasticExtensionTest extends SapphireTest
         $extension = new DataObjectElasticExtension();
         foreach ($pages as $page) {
             $extension->setOwner($page);
-            $page->delete();
             $extension->onAfterDelete();
+            $page->delete();
         }
         $query = new ElasticQuery();
         $query->addTerm('Page');
@@ -44,5 +44,17 @@ class DataObjectElasticExtensionTest extends SapphireTest
         // So... Unsure how to fix this with a proper assertion
         // Even despite the wait in PHP, it doesn't help
         $this->assertEquals(0, \Page::get()->count());
+    }
+
+    public function testAddRemoveFromElastic()
+    {
+
+        $page = \Page::create(['Title' => 'AddRemove Test']);
+        $extension = new DataObjectElasticExtension();
+        $extension->setOwner($page);
+        $indexCheck = $page->pushToElastic();
+        $this->assertNotFalse($indexCheck);
+        $removeCheck = $page->deleteFromElastic();
+        $this->assertNotFalse($removeCheck);
     }
 }

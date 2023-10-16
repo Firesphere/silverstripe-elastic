@@ -12,9 +12,11 @@ namespace Firesphere\ElasticSearch\Extensions;
 
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
+use Elastic\Elasticsearch\Response\Elasticsearch;
 use Exception;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
+use Http\Promise\Promise;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Core\Injector\Injector;
@@ -81,12 +83,15 @@ class DataObjectElasticExtension extends DataExtension
     }
 
     /**
+     * @param ElasticCoreService $service
+     * @param array $deleteQuery
+     * @return Elasticsearch|Promise|bool
      * @throws NotFoundExceptionInterface
      */
-    protected function executeQuery(ElasticCoreService $service, array $deleteQuery): void
+    protected function executeQuery(ElasticCoreService $service, array $deleteQuery)
     {
         try {
-            $service->getClient()->deleteByQuery($deleteQuery);
+            return $service->getClient()->deleteByQuery($deleteQuery);
         } catch (Exception $e) {
             // DirtyClass handling is a DataObject Search Core extension
             $dirty = $this->owner->getDirtyClass('DELETE');
@@ -97,6 +102,8 @@ class DataObjectElasticExtension extends DataExtension
             /** @var LoggerInterface $logger */
             $logger = Injector::inst()->get(LoggerInterface::class);
             $logger->error($e->getMessage(), $e->getTrace());
+
+            return false;
         }
     }
 
@@ -113,7 +120,7 @@ class DataObjectElasticExtension extends DataExtension
             !$this->owner->hasExtension(Versioned::class) ||
             ($this->owner->hasExtension(Versioned::class) && $this->owner->isPublished())
         ) {
-            $this->doIndex();
+            $this->pushToElastic();
         }
 
         // @codeCoverageIgnoreStart Elastic during tests isn't fast enough to pick this up properly
@@ -128,11 +135,12 @@ class DataObjectElasticExtension extends DataExtension
      * and query components.
      * It can be called to add an object to the index immediately, without
      * requiring a write.
-     * @throws NotFoundExceptionInterface
+     * @return array|void|bool
      * @throws ClientResponseException
+     * @throws NotFoundExceptionInterface
      * @throws ServerResponseException
      */
-    public function doIndex()
+    public function pushToElastic()
     {
         $list = ArrayList::create();
         $list->push($this->owner);
@@ -143,8 +151,10 @@ class DataObjectElasticExtension extends DataExtension
             $index = Injector::inst()->get($indexStr);
             $idxConfig = ElasticIndex::config()->get($index->getIndexName());
             if (in_array($this->owner->ClassName, $idxConfig['Classes'])) {
-                $service->updateIndex($index, $list);
+                $result = $service->updateIndex($index, $list);
             }
         }
+
+        return $result ?? false;
     }
 }
