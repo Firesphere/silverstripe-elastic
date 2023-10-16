@@ -100,9 +100,9 @@ class ElasticCoreService extends BaseService
     {
         $builder = ClientBuilder::create()
             ->setHosts([$uri]);
-        if ($endpoint0['apiKey']) {
+        if (isset($endpoint0['apiKey'])) {
             $builder->setApiKey($endpoint0['apiKey']);
-        } elseif ($endpoint0['username'] && $endpoint0['password']) {
+        } elseif (isset($endpoint0['username']) && isset($endpoint0['password'])) {
             $builder->setBasicAuthentication($endpoint0['username'], $endpoint0['password']);
         }
         // Disable the SSL Certificate check

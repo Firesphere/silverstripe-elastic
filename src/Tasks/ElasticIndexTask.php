@@ -19,11 +19,13 @@ use Firesphere\SearchBackend\Traits\IndexingTraits\IndexingTrait;
 use HttpException;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
+use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DB;
 use SilverStripe\ORM\SS_List;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
@@ -304,6 +306,15 @@ class ElasticIndexTask extends BuildTask
             ->sort('ID ASC')
             ->limit($batchLength, ($group * $batchLength));
         if ($items->count()) {
+            $message = sprintf(
+                "Indexing group %s for %s",
+                $group,
+                $this->getIndex()->getIndexName()
+            );
+            if (Director::is_cli()) {
+                DB::alteration_message($message);
+            }
+            $this->logger->info($message);
             $this->updateIndex($items);
         }
     }

@@ -38,6 +38,17 @@ class DataObjectElasticExtension extends DataExtension
     public function onAfterDelete()
     {
         parent::onAfterDelete();
+        $this->deleteFromElastic();
+    }
+
+    /**
+     * Can be called directly, if a DataObject needs to be removed
+     * immediately.
+     * @return void
+     * @throws NotFoundExceptionInterface
+     */
+    public function deleteFromElastic(): void
+    {
         $service = new ElasticCoreService();
         $indexes = $service->getValidIndexes();
         foreach ($indexes as $index) {
@@ -70,9 +81,6 @@ class DataObjectElasticExtension extends DataExtension
     }
 
     /**
-     * @param ElasticCoreService $service
-     * @param array $deleteQuery
-     * @return void
      * @throws NotFoundExceptionInterface
      */
     protected function executeQuery(ElasticCoreService $service, array $deleteQuery): void
@@ -80,6 +88,7 @@ class DataObjectElasticExtension extends DataExtension
         try {
             $service->getClient()->deleteByQuery($deleteQuery);
         } catch (Exception $e) {
+            // DirtyClass handling is a DataObject Search Core extension
             $dirty = $this->owner->getDirtyClass('DELETE');
             $ids = json_decode($dirty->IDs ?? '[]');
             $ids[] = $this->owner->ID;
@@ -93,6 +102,9 @@ class DataObjectElasticExtension extends DataExtension
 
     /**
      * Reindex after write, if it's an indexed new/updated object
+     * @throws ClientResponseException
+     * @throws NotFoundExceptionInterface
+     * @throws ServerResponseException
      */
     public function onAfterWrite()
     {
@@ -103,14 +115,21 @@ class DataObjectElasticExtension extends DataExtension
         ) {
             $this->doIndex();
         }
+        if ($this->owner->isChanged('ShowInSearch') && !$this->owner->ShowInSearch) {
+            $this->deleteFromElastic();
+        }
     }
 
     /**
+     * This is a separate method from the delete action, as it's a different route
+     * and query components.
+     * It can be called to add an object to the index immediately, without
+     * requiring a write.
      * @throws NotFoundExceptionInterface
      * @throws ClientResponseException
      * @throws ServerResponseException
      */
-    private function doIndex()
+    public function doIndex()
     {
         $list = ArrayList::create();
         $list->push($this->owner);
