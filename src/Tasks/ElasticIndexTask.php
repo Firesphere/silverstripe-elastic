@@ -1,4 +1,11 @@
 <?php
+/**
+ * Class ElasticIndexTask|Firesphere\ElasticSearch\Tasks\ElasticIndexTask Index Elastic cores
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Tasks;
 
@@ -21,6 +28,12 @@ use SilverStripe\ORM\SS_List;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
 
+/**
+ * Class ElasticIndexTask
+ *
+ * @description Index items to Elastic through a tasks
+ * @package Firesphere\Elastic\Search
+ */
 class ElasticIndexTask extends BuildTask
 {
     use IndexingTrait;

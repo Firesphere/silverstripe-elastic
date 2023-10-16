@@ -9,6 +9,9 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 
+/**
+ * Example task to empty an Elastic index
+ */
 class BulkDeleteTask extends BuildTask
 {
     /**

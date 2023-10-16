@@ -1,4 +1,12 @@
 <?php
+/**
+ * Trait BaseIndexTrait|Firesphere\ElasticSearch\Traits\BaseIndexTrait Used to extract methods from the
+ * {@link \Firesphere\ElasticSearch\Indexes\ElasticIndex} to make the code more readable
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Traits\IndexTraits;
 
@@ -12,6 +20,12 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\ORM\FieldType\DBString;
 
+/**
+ * Trait ElasticIndexTrait
+ * Getters and Setters for the ElasticIndex
+ *
+ * @package Firesphere\Elastic\Search
+ */
 trait BaseIndexTrait
 {
     /**

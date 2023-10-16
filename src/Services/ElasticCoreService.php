@@ -1,4 +1,11 @@
 <?php
+/**
+ * class ElasticCoreService|Firesphere\ElasticSearch\Services\ElasticCoreService Base service for communicating with the core
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Services;
 
@@ -17,6 +24,14 @@ use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\SS_List;
 
+/**
+ * Class ElasticCoreService provides the base connection to Elastic.
+ *
+ * Default service to connect to Elastic and handle all base requirements to support Elastic.
+ * Default constants are available to support any set up.
+ *
+ * @package Firesphere\Elastic\Search
+ */
 class ElasticCoreService extends BaseService
 {
     use Configurable;

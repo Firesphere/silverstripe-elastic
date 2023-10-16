@@ -15,7 +15,7 @@ use Firesphere\SearchBackend\Helpers\SearchLogger;
  * Class SearchLogger
  *
  * Log information from Elastic to the CMS for reference
- *
+ * @todo
  * @package Firesphere\Elastic\Search
  */
 class ElasticLogger extends SearchLogger

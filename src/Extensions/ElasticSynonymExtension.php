@@ -1,4 +1,12 @@
 <?php
+/**
+ * class ElasticSynonymExtension|Firesphere\ElasticSearch\Extensions\ElasticSynonymExtension Synonym updates for Elastic
+ * pushed to Elastic
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Extensions;
 

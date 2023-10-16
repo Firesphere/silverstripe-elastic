@@ -1,4 +1,11 @@
 <?php
+/**
+ * Class ElasticConfigureSynonymsTask|Firesphere\ElasticSearch\Tasks\ElasticConfigureSynonymsTask Index Elastic cores
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Tasks;
 
@@ -11,6 +18,12 @@ use Firesphere\SearchBackend\Helpers\Synonyms as BaseSynonyms;
 use Firesphere\SearchBackend\Models\SearchSynonym;
 use SilverStripe\Dev\BuildTask;
 
+/**
+ * Class ElasticConfigureSynonymsTask
+ *
+ * @description Index synonyms to Elastic through a tasks
+ * @package Firesphere\Elastic\Search
+ */
 class ElasticConfigureSynonymsTask extends BuildTask
 {
     /**

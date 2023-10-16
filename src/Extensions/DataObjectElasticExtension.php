@@ -1,4 +1,12 @@
 <?php
+/**
+ * class DataObjectExtension|Firesphere\ElasticSearch\Extensions\DataObjectExtension Adds checking if changes should be
+ * pushed to Elastic
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Extensions;
 
