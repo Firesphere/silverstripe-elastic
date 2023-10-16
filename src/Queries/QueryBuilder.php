@@ -23,6 +23,31 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * @param ElasticQuery $query
      * @param ElasticIndex $index
+     * @return array
+     */
+    public static function buildQuery(BaseQuery $query, CoreIndex $index): array
+    {
+        $self = self::init($query, $index);
+        $filters = $self->getFilters($index, $query);
+        $terms = $self->getUserQuery($query); // There's always a term
+        $terms = array_merge($terms, $filters);
+
+        return [
+            'index' => $index->getIndexName(),
+            'from'  => $query->getStart(),
+            'size'  => $query->getRows(),
+            'body'  => [
+                'query'     => [
+                    'bool' => $terms,
+                ],
+                'highlight' => $self->getHighlighter()
+            ]
+        ];
+    }
+
+    /**
+     * @param ElasticQuery $query
+     * @param ElasticIndex $index
      * @return self
      */
     protected static function init(ElasticQuery $query, ElasticIndex $index): self
@@ -35,32 +60,34 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * @param ElasticQuery $query
-     * @param ElasticIndex $index
-     * @return array
+     * @param mixed $index
      */
-    public static function buildQuery(BaseQuery $query, CoreIndex $index): array
+    public function setIndex($index): void
     {
-        $self = self::init($query, $index);
-        $filters = $self->getFilters($index, $query);
-        $orFilters = $self->getOrFilters($query);
-        // Always primarily search against the _text field, that's where all content is
-        $terms = $self->getUserQuery($query); // There's always a term
-        if (count($filters)) {
-            $filters = ['filter' => ['bool' => ['must' => $filters]]];
-            $terms = array_merge($terms, $filters);
-        }
-        if (count($orFilters)) {
-            $terms['filter']['bool']['should'] = $orFilters;
-        }
+        $this->index = $index;
+    }
 
+    /**
+     * @param mixed $query
+     */
+    public function setQuery($query): void
+    {
+        $this->query = $query;
+    }
+
+    /**
+     * Build the `OR` and `AND` filters
+     * @param ElasticIndex $index
+     * @param ElasticQuery $query
+     * @return array[]
+     */
+    private function getFilters(ElasticIndex $index, ElasticQuery $query): array
+    {
         return [
-            'index' => $index->getIndexName(),
-            'from'  => $query->getStart(),
-            'size'  => $query->getRows(),
-            'body'  => [
-                'query' => [
-                    'bool' => $terms,
+            'filter' => [
+                'bool' => [
+                    'must'   => $this->getAndFilters($index, $query),
+                    'should' => $this->getOrFilters($query)
                 ],
             ]
         ];
@@ -68,11 +95,11 @@ class QueryBuilder implements QueryBuilderInterface
 
     /**
      * Required must-be filters if they're here.
-     * @param CoreIndex|ElasticIndex $index
-     * @param ElasticQuery|BaseQuery $query
+     * @param ElasticIndex $index
+     * @param ElasticQuery $query
      * @return array[]
      */
-    private function getFilters(CoreIndex|ElasticIndex $index, ElasticQuery|BaseQuery $query): array
+    private function getAndFilters(ElasticIndex $index, ElasticQuery $query): array
     {
         // Default,
         $filters = [
@@ -94,10 +121,10 @@ class QueryBuilder implements QueryBuilderInterface
 
     /**
      * Create the "should" filter, that is OR instead of AND
-     * @param BaseQuery $query
+     * @param ElasticQuery $query
      * @return array
      */
-    private function getOrFilters(BaseQuery $query)
+    private function getOrFilters(ElasticQuery $query): array
     {
         $filters = [];
         if (count($query->getOrFilters())) {
@@ -160,22 +187,6 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * @param mixed $query
-     */
-    public function setQuery($query): void
-    {
-        $this->query = $query;
-    }
-
-    /**
-     * @param mixed $index
-     */
-    public function setIndex($index): void
-    {
-        $this->index = $index;
-    }
-
-    /**
      * @param string $type
      * @param string $field
      * @param $text
@@ -194,5 +205,19 @@ class QueryBuilder implements QueryBuilderInterface
         ];
 
         return $should;
+    }
+
+    private function getHighlighter(): array
+    {
+        if ($this->query->isHighlight()) {
+            $highlights = [];
+            foreach ($this->index->getFulltextFields() as $field) {
+                $highlights[$field] = ['type' => 'unified'];
+            }
+            return ['fields' => $highlights]
+                ;
+        }
+
+        return [];
     }
 }

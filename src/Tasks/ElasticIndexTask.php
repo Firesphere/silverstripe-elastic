@@ -209,13 +209,13 @@ class ElasticIndexTask extends BuildTask
         $this->getLogger()->info(sprintf('Total groups %s', $totalGroups));
         do {
             try {
-                if ($this->hasPCNTL()) {
-                    // @codeCoverageIgnoreStart
-                    $group = $this->spawnChildren($class, $group, $groups);
-                // @codeCoverageIgnoreEnd
-                } else {
-                    $this->doReindex($group, $class);
-                }
+//                if ($this->hasPCNTL()) {
+//                    // @codeCoverageIgnoreStart
+//                    $group = $this->spawnChildren($class, $group, $groups);
+//                // @codeCoverageIgnoreEnd
+//                } else {
+                $this->doReindex($group, $class);
+//                }
                 $group++;
             } catch (Exception $error) {
                 // @codeCoverageIgnoreStart
