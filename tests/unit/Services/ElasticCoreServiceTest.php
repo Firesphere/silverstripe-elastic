@@ -6,11 +6,8 @@ use app\src\SearchIndex;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\ORM\DatabaseAdmin;
 
 class ElasticCoreServiceTest extends SapphireTest
 {

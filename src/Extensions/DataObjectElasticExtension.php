@@ -12,7 +12,6 @@ use Psr\Log\LoggerInterface;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
-use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
@@ -40,41 +39,6 @@ class DataObjectElasticExtension extends DataExtension
             if (in_array($this->owner->ClassName, $config['Classes'])) {
                 $deleteQuery = $this->getDeleteQuery($index);
                 $this->executeQuery($service, $deleteQuery);
-            }
-        }
-    }
-
-    /**
-     * Reindex after write, if it's an indexed new/updated object
-     */
-    public function onAfterWrite()
-    {
-        parent::onAfterWrite();
-        if (
-            !$this->owner->hasExtension(Versioned::class) ||
-            ($this->owner->hasExtension(Versioned::class) && $this->owner->isPublished())
-        ) {
-            $this->doIndex();
-        }
-    }
-
-    /**
-     * @throws NotFoundExceptionInterface
-     * @throws ClientResponseException
-     * @throws ServerResponseException
-     */
-    private function doIndex()
-    {
-        $list = ArrayList::create();
-        $list->push($this->owner);
-        /** @var ElasticCoreService $service */
-        $service = Injector::inst()->get(ElasticCoreService::class);
-        foreach ($service->getValidIndexes() as $indexStr) {
-            /** @var ElasticIndex $index */
-            $index = Injector::inst()->get($indexStr);
-            $idxConfig = ElasticIndex::config()->get($index->getIndexName());
-            if (in_array($this->owner->ClassName, $idxConfig['Classes'])) {
-                $service->updateIndex($index, $list);
             }
         }
     }
@@ -116,6 +80,41 @@ class DataObjectElasticExtension extends DataExtension
             /** @var LoggerInterface $logger */
             $logger = Injector::inst()->get(LoggerInterface::class);
             $logger->error($e->getMessage(), $e->getTrace());
+        }
+    }
+
+    /**
+     * Reindex after write, if it's an indexed new/updated object
+     */
+    public function onAfterWrite()
+    {
+        parent::onAfterWrite();
+        if (
+            !$this->owner->hasExtension(Versioned::class) ||
+            ($this->owner->hasExtension(Versioned::class) && $this->owner->isPublished())
+        ) {
+            $this->doIndex();
+        }
+    }
+
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ClientResponseException
+     * @throws ServerResponseException
+     */
+    private function doIndex()
+    {
+        $list = ArrayList::create();
+        $list->push($this->owner);
+        /** @var ElasticCoreService $service */
+        $service = Injector::inst()->get(ElasticCoreService::class);
+        foreach ($service->getValidIndexes() as $indexStr) {
+            /** @var ElasticIndex $index */
+            $index = Injector::inst()->get($indexStr);
+            $idxConfig = ElasticIndex::config()->get($index->getIndexName());
+            if (in_array($this->owner->ClassName, $idxConfig['Classes'])) {
+                $service->updateIndex($index, $list);
+            }
         }
     }
 }

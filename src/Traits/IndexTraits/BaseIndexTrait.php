@@ -35,21 +35,10 @@ trait BaseIndexTrait
      */
     protected $sortFields = [];
     /**
-     * @var string Default search field
-     */
-    protected $defaultField = '_text';
-    /**
      * @var array Stored fields
      */
     protected $storedFields = [];
-    /**
-     * @var array Fields to copy to the default fields
-     */
-    protected $copyFields = [
-        '_text' => [
-            '*',
-        ],
-    ];
+
     /**
      * usedAllFields is used to determine if the addAllFields method has been called
      * This is to prevent a notice if there is no yml.
@@ -57,52 +46,6 @@ trait BaseIndexTrait
      * @var bool
      */
     protected $usedAllFields = false;
-
-    /**
-     * Return the copy fields
-     *
-     * @return array
-     */
-    public function getCopyFields(): array
-    {
-        return $this->copyFields;
-    }
-
-    /**
-     * Set the copy fields
-     *
-     * @param array $copyField
-     * @return $this
-     */
-    public function setCopyFields($copyField): self
-    {
-        $this->copyFields = $copyField;
-
-        return $this;
-    }
-
-    /**
-     * Return the default field for this index
-     *
-     * @return string
-     */
-    public function getDefaultField(): string
-    {
-        return $this->defaultField;
-    }
-
-    /**
-     * Set the default field for this index
-     *
-     * @param string $defaultField
-     * @return $this
-     */
-    public function setDefaultField($defaultField): self
-    {
-        $this->defaultField = $defaultField;
-
-        return $this;
-    }
 
     /**
      * Add a field to sort on

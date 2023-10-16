@@ -4,14 +4,14 @@ docroot: public
 php_version: "8.1"
 webserver_type: apache-fpm
 xdebug_enabled: false
-additional_hostnames: []
-additional_fqdns: []
+additional_hostnames: [ ]
+additional_fqdns: [ ]
 database:
-    type: mariadb
-    version: "10.4"
+  type: mariadb
+  version: "10.4"
 use_dns_when_possible: false
 composer_version: "2"
-web_environment: []
+web_environment: [ ]
 nodejs_version: "18"
 
 # Key features of DDEV's config.yaml:
