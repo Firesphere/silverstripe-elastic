@@ -1,6 +1,6 @@
 <?php
 /**
- * class BaseIndex|Firesphere\ElasticSearch\Indexes\BaseIndex is the base for indexing items
+ * class ElasticIndex|Firesphere\ElasticSearch\Indexes\ElasticIndex is the base for indexing items
  *
  * @package Firesphere\Elastic\Search
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
