@@ -1,0 +1,40 @@
+# Installing the module
+
+Best practice is to use composer:
+`composer require firesphere/solr-search`
+
+## Manual setup
+
+- Create a clean installation of SilverStripe 4 or 5 (`composer create-project`)
+- Clone this repo in to the folder of your liking
+- Check which modules you need to add to your base `composer.json`
+- Run a composer update
+- Create a base index:
+
+```php
+class MyIndex extends ElasticIndex
+{
+    /**
+     * Called during construction, this is the method that builds the structure.
+     * Used instead of overriding __construct as we have specific execution order - code that has
+     * to be run before _and/or_ after this.
+     * @throws Exception
+     */
+    public function init()
+    {
+        $this->addClass(SiteTree::class);
+
+        $this->addFulltextField('Title');
+    }
+    
+    public function getIndexName()
+    {
+        return 'this-is-my-index';
+    }
+}
+```
+- Run `vendor/bin/sake dev/tasks/ElasticIndexTask` to add documents to your index.
+Note, the index will be automatically created if it doesn't exist yet.
+- Run `vendor/bin/sake dev/tasks/ElasticSynonymTask` to load synonyms to Elastic.
+
+Once these tasks have completed - happy searching!

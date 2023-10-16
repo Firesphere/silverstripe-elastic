@@ -1,4 +1,11 @@
 <?php
+/**
+ * class QueryBuilder|Firesphere\ElasticSearch\Queries\Builders\QueryBuilder Build the Elastic query array
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Queries\Builders;
 
@@ -8,6 +15,13 @@ use Firesphere\SearchBackend\Indexes\CoreIndex;
 use Firesphere\SearchBackend\Interfaces\QueryBuilderInterface;
 use Firesphere\SearchBackend\Queries\BaseQuery;
 
+/**
+ * Class QueryBuilder
+ *
+ * Build/construct an array to send to Elastic to query the results.
+ *
+ * @package Firesphere\Elastic\Search
+ */
 class QueryBuilder implements QueryBuilderInterface
 {
     /**

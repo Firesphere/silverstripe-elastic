@@ -1,4 +1,11 @@
 <?php
+/**
+ * class ElasticIndex|Firesphere\ElasticSearch\Indexes\ElasticIndex is the base for indexing items
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Indexes;
 
@@ -18,6 +25,14 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Deprecation;
 
+/**
+ * Base for managing a Elastic core.
+ *
+ * Base index settings and methods. Should be extended with at least a name for the index.
+ * This is an abstract class that can not be instantiated on it's own
+ *
+ * @package Firesphere\Elastic\Search
+ */
 abstract class ElasticIndex extends CoreIndex
 {
     use Extensible;

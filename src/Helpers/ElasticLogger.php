@@ -7,7 +7,7 @@
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
  */
 
-namespace Firesphere\Elasticsearch\Helpers;
+namespace Firesphere\ElasticSearch\Helpers;
 
 use Firesphere\SearchBackend\Helpers\SearchLogger;
 
@@ -15,7 +15,7 @@ use Firesphere\SearchBackend\Helpers\SearchLogger;
  * Class SearchLogger
  *
  * Log information from Elastic to the CMS for reference
- *
+ * @todo
  * @package Firesphere\Elastic\Search
  */
 class ElasticLogger extends SearchLogger

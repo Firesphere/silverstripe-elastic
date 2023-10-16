@@ -1,4 +1,11 @@
 <?php
+/**
+ * class SearchResult|Firesphere\ElasticSearch\Results\SearchResult Result of a query
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Results;
 
@@ -19,6 +26,14 @@ use SilverStripe\View\ArrayData;
 use SilverStripe\View\ViewableData;
 use stdClass;
 
+/**
+ * Class SearchResult is the combined result in a SilverStripe readable way
+ *
+ * Each of the requested features of a ElasticQuery are generated to be easily accessible in the controller.
+ * In the controller, each required item can be accessed through the resulting method in this class.
+ *
+ * @package Firesphere\Elastic\Search
+ */
 class SearchResult extends ViewableData implements SearchResultInterface
 {
     use SearchResultGetTrait;
@@ -44,8 +59,6 @@ class SearchResult extends ViewableData implements SearchResultInterface
 
     /**
      * SearchResult constructor.
-     * Funnily enough, the $result contains the actual results, and has methods for the other things.
-     * See Solarium docs for this.
      *
      * @param Elasticsearch $result
      * @param ElasticQuery $query
