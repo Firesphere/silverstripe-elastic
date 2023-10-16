@@ -111,8 +111,8 @@ class QueryBuilderTest extends SapphireTest
         $query->addTerm('Test Tset');
         $resultQuery = QueryBuilder::buildQuery($query, $idx);
 
-        $this->assertContains('Test', $resultQuery['body']['suggest']['1-partterm']);
-        $this->assertContains('Tset', $resultQuery['body']['suggest']['2-partterm']);
-        $this->assertContains('Test Tset', $resultQuery['body']['suggest']['1-fullterm']);
+        $this->assertEquals('Test', $resultQuery['body']['suggest']['0-partterm']['text']);
+        $this->assertEquals('Tset', $resultQuery['body']['suggest']['1-partterm']['text']);
+        $this->assertEquals('Test Tset', $resultQuery['body']['suggest']['1-fullterm']['text']);
     }
 }

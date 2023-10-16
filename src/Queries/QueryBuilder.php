@@ -232,7 +232,7 @@ class QueryBuilder implements QueryBuilderInterface
         foreach ($terms as $j => $term) {
             $base['text'] = $term['text'];
             $suggest[$j . '-fullterm'] = $base;
-            if (str_contains(' ', $term['text'])) {
+            if (str_contains($term['text'], ' ')) {
                 $termArray = explode(' ', $term['text']);
                 foreach ($termArray as $i => $word) {
                     $base['text'] = $word;
