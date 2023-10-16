@@ -32,7 +32,7 @@ use stdClass;
  * Each of the requested features of a ElasticQuery are generated to be easily accessible in the controller.
  * In the controller, each required item can be accessed through the resulting method in this class.
  *
- * @package Firesphere\Solr\Search
+ * @package Firesphere\Elastic\Search
  */
 class SearchResult extends ViewableData implements SearchResultInterface
 {
@@ -59,8 +59,6 @@ class SearchResult extends ViewableData implements SearchResultInterface
 
     /**
      * SearchResult constructor.
-     * Funnily enough, the $result contains the actual results, and has methods for the other things.
-     * See Solarium docs for this.
      *
      * @param Elasticsearch $result
      * @param ElasticQuery $query

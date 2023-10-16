@@ -84,7 +84,7 @@ class ElasticIndexTask extends BuildTask
     protected $index;
 
     /**
-     * SolrIndexTask constructor. Sets up the document factory
+     * ElasticIndexTask constructor. Sets up the document factory
      *
      * @throws NotFoundExceptionInterface
      */
