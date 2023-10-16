@@ -144,7 +144,7 @@ class DataObjectElasticExtension extends DataExtension
      * and query components.
      * It can be called to add an object to the index immediately, without
      * requiring a write.
-     * @return array|void|bool
+     * @return mixed
      * @throws ClientResponseException
      * @throws NotFoundExceptionInterface
      * @throws ServerResponseException
@@ -169,9 +169,12 @@ class DataObjectElasticExtension extends DataExtension
     }
 
     /**
+     * Add ability to see what the response
+     * from Elasticsearch was after a delete action.
+     *
      * @return mixed
      */
-    public function getDeletedFromElastic()
+    public function isDeletedFromElastic()
     {
         return $this->deletedFromElastic;
     }

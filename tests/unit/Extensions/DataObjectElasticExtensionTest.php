@@ -58,7 +58,8 @@ class DataObjectElasticExtensionTest extends SapphireTest
         $removeCheck = $extension->deleteFromElastic();
         $this->assertInstanceOf(Elasticsearch::class, $removeCheck);
         $page->ShowInSearch = false;
+        $page->forceChange();
         $extension->onAfterWrite();
-        $this->assertInstanceOf(Elasticsearch::class, $extension->getDeletedFromElastic());
+        $this->assertInstanceOf(Elasticsearch::class, $extension->isDeletedFromElastic());
     }
 }
