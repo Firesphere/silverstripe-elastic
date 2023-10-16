@@ -79,7 +79,10 @@ class SearchResult extends ViewableData implements SearchResultInterface
             foreach ($spellcheck as $suggestion) {
                 foreach ($suggestion as $suggest) {
                     foreach ($suggest['options'] as $option) {
-                        $spellcheckList[] = ArrayData::create([$suggest['text'] => $option['text']]);
+                        $spellcheckList[] = ArrayData::create([
+                            'original' => $suggest['text'],
+                            'suggestion' => $option['text'],
+                        ]);
                     }
                 }
             }

@@ -28,5 +28,6 @@ class EndToEndTest extends SapphireTest
         $this->assertGreaterThan(0, $results->getTotalItems());
         $this->assertInstanceOf(SearchResult::class, $results);
         $this->assertInstanceOf(PaginatedList::class, $results->getPaginatedMatches());
+        $this->assertInstanceOf(ArrayList::class, $results->getSpellcheck());
     }
 }
