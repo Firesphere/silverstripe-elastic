@@ -3,6 +3,7 @@
 namespace Firesphere\ElasticSearch\Extensions;
 
 use App\src\SearchIndex;
+use Elastic\Elasticsearch\Response\Elasticsearch;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use SilverStripe\Dev\SapphireTest;
@@ -53,8 +54,11 @@ class DataObjectElasticExtensionTest extends SapphireTest
         $extension = new DataObjectElasticExtension();
         $extension->setOwner($page);
         $indexCheck = $extension->pushToElastic();
-        $this->assertNotFalse($indexCheck);
+        $this->assertInstanceOf(Elasticsearch::class, $indexCheck);
         $removeCheck = $extension->deleteFromElastic();
-        $this->assertNotFalse($removeCheck);
+        $this->assertInstanceOf(Elasticsearch::class, $removeCheck);
+        $page->ShowInSearch = false;
+        $extension->onAfterWrite();
+        $this->assertInstanceOf(Elasticsearch::class, $extension->getDeletedFromElastic());
     }
 }

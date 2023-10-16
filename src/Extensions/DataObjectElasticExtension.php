@@ -16,9 +16,11 @@ use Elastic\Elasticsearch\Response\Elasticsearch;
 use Exception;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
+use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
 use Http\Promise\Promise;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
@@ -33,9 +35,9 @@ use SilverStripe\Versioned\Versioned;
  */
 class DataObjectElasticExtension extends DataExtension
 {
+    protected $deletedFromElastic;
     /**
      * @throws NotFoundExceptionInterface
-     * @throws ValidationException
      */
     public function onAfterDelete()
     {
@@ -59,7 +61,7 @@ class DataObjectElasticExtension extends DataExtension
             $idx = Injector::inst()->get($index);
             $config = ElasticIndex::config()->get($idx->getIndexName());
             if (in_array($this->owner->ClassName, $config['Classes'])) {
-                $deleteQuery = $this->getDeleteQuery($index);
+                $deleteQuery = $this->getDeleteQuery($idx);
                 $result = $this->executeQuery($service, $deleteQuery);
             }
         }
@@ -68,13 +70,13 @@ class DataObjectElasticExtension extends DataExtension
     }
 
     /**
-     * @param mixed $index
+     * @param ElasticIndex $index
      * @return array
      */
-    private function getDeleteQuery(mixed $index): array
+    private function getDeleteQuery(ElasticIndex $index): array
     {
         return [
-            'index' => $index,
+            'index' => $index->getIndexName(),
             'body'  => [
                 'query' => [
                     'match' => [
@@ -96,10 +98,12 @@ class DataObjectElasticExtension extends DataExtension
         try {
             return $service->getClient()->deleteByQuery($deleteQuery);
         } catch (Exception $e) {
+            /** @var DataObjectSearchExtension|DataObject $owner */
+            $owner = $this->owner;
             // DirtyClass handling is a DataObject Search Core extension
-            $dirty = $this->owner->getDirtyClass('DELETE');
+            $dirty = $owner->getDirtyClass('DELETE');
             $ids = json_decode($dirty->IDs ?? '[]');
-            $ids[] = $this->owner->ID;
+            $ids[] = $owner->ID;
             $dirty->IDs = json_encode($ids);
             $dirty->write();
             /** @var LoggerInterface $logger */
@@ -119,20 +123,20 @@ class DataObjectElasticExtension extends DataExtension
     public function onAfterWrite()
     {
         parent::onAfterWrite();
+        /** @var DataObject|SiteTree|DataObjectElasticExtension|DataObjectSearchExtension|Versioned $owner */
+        $owner = $this->owner;
         if (
-            !$this->owner->hasExtension(Versioned::class) ||
-            ($this->owner->hasExtension(Versioned::class) && $this->owner->isPublished())
+            !$owner->hasExtension(Versioned::class) ||
+            ($owner->hasExtension(Versioned::class) && $owner->isPublished())
         ) {
             $this->pushToElastic();
         }
 
-        // @codeCoverageIgnoreStart Elastic during tests isn't fast enough to pick this up properly
-        if ($this->owner->hasField('ShowInSearch') &&
-            $this->owner->isChanged('ShowInSearch') &&
-            !$this->owner->ShowInSearch) {
-            $this->deleteFromElastic();
+        if ($owner->hasField('ShowInSearch') &&
+            $owner->isChanged('ShowInSearch') &&
+            !$owner->ShowInSearch) {
+            $this->deletedFromElastic = $this->deleteFromElastic();
         }
-        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -162,5 +166,13 @@ class DataObjectElasticExtension extends DataExtension
         }
 
         return $result;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDeletedFromElastic()
+    {
+        return $this->deletedFromElastic;
     }
 }

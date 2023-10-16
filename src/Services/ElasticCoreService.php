@@ -14,10 +14,11 @@ use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Exception\AuthenticationException;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
+use Elastic\Elasticsearch\Response\Elasticsearch;
 use Firesphere\ElasticSearch\Factories\DocumentFactory;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\SearchBackend\Services\BaseService;
-use http\Env;
+use Http\Promise\Promise;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionException;
 use SilverStripe\Core\Config\Configurable;
@@ -131,24 +132,28 @@ class ElasticCoreService extends BaseService
     /**
      * @param ElasticIndex $index
      * @param SS_List $items
-     * @return void|array
+     * @return array|bool|Elasticsearch|Promise
      * @throws NotFoundExceptionInterface
      * @throws ClientResponseException
      * @throws ServerResponseException
      */
     public function updateIndex($index, $items, $returnDocs = false)
     {
+        $result = null;
         $fields = $index->getFieldsForIndexing();
         $factory = $this->getFactory($items);
         $docs = $factory->buildItems($fields, $index);
         $body = ['body' => []];
         if (count($docs)) {
             $body = $this->buildBody($docs, $index);
-            $this->client->bulk($body);
+            $result = $this->client->bulk($body);
         }
         if ($returnDocs) {
             return $body['body'];
         }
+
+        return $result;
+
     }
 
     /**
