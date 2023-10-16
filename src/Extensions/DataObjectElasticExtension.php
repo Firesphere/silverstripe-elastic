@@ -46,11 +46,12 @@ class DataObjectElasticExtension extends DataExtension
     /**
      * Can be called directly, if a DataObject needs to be removed
      * immediately.
-     * @return void
+     * @return bool|Elasticsearch|Promise
      * @throws NotFoundExceptionInterface
      */
-    public function deleteFromElastic(): void
+    public function deleteFromElastic()
     {
+        $result = false;
         $service = new ElasticCoreService();
         $indexes = $service->getValidIndexes();
         foreach ($indexes as $index) {
@@ -59,9 +60,11 @@ class DataObjectElasticExtension extends DataExtension
             $config = ElasticIndex::config()->get($idx->getIndexName());
             if (in_array($this->owner->ClassName, $config['Classes'])) {
                 $deleteQuery = $this->getDeleteQuery($index);
-                $this->executeQuery($service, $deleteQuery);
+                $result = $this->executeQuery($service, $deleteQuery);
             }
         }
+
+        return $result;
     }
 
     /**
@@ -144,6 +147,7 @@ class DataObjectElasticExtension extends DataExtension
      */
     public function pushToElastic()
     {
+        $result = false;
         $list = ArrayList::create();
         $list->push($this->owner);
         /** @var ElasticCoreService $service */
@@ -157,6 +161,6 @@ class DataObjectElasticExtension extends DataExtension
             }
         }
 
-        return $result ?? false;
+        return $result;
     }
 }

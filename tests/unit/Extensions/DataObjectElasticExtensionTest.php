@@ -52,9 +52,9 @@ class DataObjectElasticExtensionTest extends SapphireTest
         $page = \Page::create(['Title' => 'AddRemove Test']);
         $extension = new DataObjectElasticExtension();
         $extension->setOwner($page);
-        $indexCheck = $page->pushToElastic();
+        $indexCheck = $extension->pushToElastic();
         $this->assertNotFalse($indexCheck);
-        $removeCheck = $page->deleteFromElastic();
+        $removeCheck = $extension->deleteFromElastic();
         $this->assertNotFalse($removeCheck);
     }
 }
