@@ -98,7 +98,7 @@ class ElasticIndexTest extends SapphireTest
         $this->assertArrayHasKey('Field1', $index->getFacetFields());
 
         $index->setStoredFields(['Title', 'Content', 'FieldD']);
-        $this->assertContains('FieldD', $index->getFulltextFields);
+        $this->assertContains('FieldD', $index->getFulltextFields());
         $this->assertEquals(['Title', 'Content', 'FieldD']);
     }
 
