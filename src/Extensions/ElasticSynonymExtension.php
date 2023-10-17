@@ -16,6 +16,7 @@ use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Firesphere\ElasticSearch\Models\SynonymSet;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Models\SearchSynonym;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataExtension;
 
@@ -41,7 +42,8 @@ class ElasticSynonymExtension extends DataExtension
      */
     public function onAfterWrite()
     {
-        $syn = (new ElasticCoreService())->getClient()->synonyms();
+        $service = Injector::inst()->get(ElasticCoreService::class);
+        $syn = $service->getClient()->synonyms();
         /** @var SynonymSet $set */
         $set = SynonymSet::get()->first();
         $syn->putSynonymRule([
@@ -62,7 +64,8 @@ class ElasticSynonymExtension extends DataExtension
      */
     public function onAfterDelete()
     {
-        $syn = (new ElasticCoreService())->getClient()->synonyms();
+        $service = Injector::inst()->get(ElasticCoreService::class);
+        $syn = $service->getClient()->synonyms();
         /** @var SynonymSet $set */
         $set = SynonymSet::get()->first();
         $syn->deleteSynonymRule(['set_id' => $set->Key, 'rule_id' => $this->owner->getModifiedId()]);

@@ -35,7 +35,7 @@ class QueryBuilder implements QueryBuilderInterface
     protected $index;
 
     /**
-     * @param ElasticQuery $query
+     * @param BaseQuery $query
      * @param ElasticIndex $index
      * @return array
      */
@@ -49,7 +49,7 @@ class QueryBuilder implements QueryBuilderInterface
         return [
             'index' => $index->getIndexName(),
             'from'  => $query->getStart(),
-            'size'  => $query->getRows(),
+            'size'  => $query->getRows() * 2, // To be on the safe side
             'body'  => [
                 'query'     => [
                     'bool' => $terms,

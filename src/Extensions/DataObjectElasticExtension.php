@@ -54,7 +54,7 @@ class DataObjectElasticExtension extends DataExtension
     public function deleteFromElastic()
     {
         $result = false;
-        $service = new ElasticCoreService();
+        $service = Injector::inst()->get(ElasticCoreService::class);
         $indexes = $service->getValidIndexes();
         foreach ($indexes as $index) {
             /** @var ElasticIndex $idx */

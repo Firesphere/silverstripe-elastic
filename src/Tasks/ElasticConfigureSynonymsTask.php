@@ -16,6 +16,7 @@ use Firesphere\ElasticSearch\Models\SynonymSet;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Helpers\Synonyms as BaseSynonyms;
 use Firesphere\SearchBackend\Models\SearchSynonym;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 
 /**
@@ -52,7 +53,8 @@ class ElasticConfigureSynonymsTask extends BuildTask
      */
     public function run($request)
     {
-        $client = (new ElasticCoreService())->getClient();
+        $service = Injector::inst()->get(ElasticCoreService::class);
+        $client = $service->getClient();
         $baseSynonyms = BaseSynonyms::getSynonymsFlattened();
         $baseSynonyms = $this->transformBaseSynonyms($baseSynonyms);
         $configuredSynonyms = SearchSynonym::get()->map('getModifiedID', 'getCombinedSynonym')->toArray();

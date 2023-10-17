@@ -14,7 +14,7 @@ class QueryBuilderTest extends SapphireTest
     protected static $expected_query = [
         'index' => 'search-testindex',
         'from'  => 0,
-        'size'  => 10,
+        'size'  => 20,
         'body'  => [
             'query'     => [
                 'bool' => [
