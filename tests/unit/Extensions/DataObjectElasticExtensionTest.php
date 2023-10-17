@@ -22,7 +22,7 @@ class DataObjectElasticExtensionTest extends SapphireTest
         $extension = new DataObjectElasticExtension();
         $extension->setOwner($page);
         $extension->onAfterWrite();
-        sleep(5); // Wait for Elastic to do its job
+        sleep(1); // Wait for Elastic to do its job
         $query = new ElasticQuery();
         $query->addTerm('Page');
         /** @var ElasticIndex $index */
@@ -63,8 +63,8 @@ class DataObjectElasticExtensionTest extends SapphireTest
         $page->ShowInSearch = false;
         $page->forceChange();
         $extension->onAfterWrite();
-        // Not executed check, due to a race condition
-//        $this->assertInstanceOf(Elasticsearch::class, $extension->isDeletedFromElastic());
+        // Expect false, because it wasn't even in Elastic anymore
+        $this->assertFalse($extension->isDeletedFromElastic());
     }
 
     public function testShouldPush()
