@@ -11,6 +11,7 @@
 namespace Firesphere\ElasticSearch\Traits\IndexTraits;
 
 use Elastic\Elasticsearch\Client;
+use Firesphere\SearchBackend\Indexes\CoreIndex;
 use ReflectionClass;
 use ReflectionException;
 use SilverStripe\Core\Config\Config;
@@ -69,14 +70,7 @@ trait BaseIndexTrait
      */
     public function addSortField($sortField): self
     {
-        if (!in_array($sortField, $this->getFulltextFields(), true) &&
-            !in_array($sortField, $this->getFilterFields(), true)
-        ) {
-            $this->addFulltextField($sortField);
-            $this->sortFields[] = $sortField;
-        }
-
-        $this->setSortFields(array_unique($this->getSortFields()));
+        $this->addFulltextField($sortField);
 
         return $this;
     }
@@ -127,6 +121,9 @@ trait BaseIndexTrait
     public function setFilterFields($filterFields): self
     {
         $this->filterFields = $filterFields;
+        foreach ($filterFields as $filterField) {
+            $this->addFulltextField($filterField);
+        }
 
         return $this;
     }
@@ -135,29 +132,12 @@ trait BaseIndexTrait
      * Add a single Fulltext field
      *
      * @param string $fulltextField
-     * @param null|string $forceType
      * @param array $options
      * @return $this
      */
-    public function addFulltextField($fulltextField, $forceType = null, $options = []): self
+    public function addFulltextField($fulltextField, $options = []): self
     {
-        if ($forceType) {
-            Deprecation::notice('5.0', 'ForceType should be handled through casting');
-        }
-
-        $key = array_search($fulltextField, $this->getFilterFields(), true);
-
-        if (!$key) {
-            $this->fulltextFields[] = $fulltextField;
-        }
-
-        if (isset($options['boost'])) {
-            $this->addBoostedField($fulltextField, [], $options['boost']);
-        }
-
-        if (isset($options['stored'])) {
-            $this->storedFields[] = $fulltextField;
-        }
+        $this->fulltextFields[] = $fulltextField;
 
         return $this;
     }
@@ -181,6 +161,9 @@ trait BaseIndexTrait
     public function setSortFields($sortFields): self
     {
         $this->sortFields = $sortFields;
+        foreach ($sortFields as $sortField) {
+            $this->addFulltextField($sortField);
+        }
 
         return $this;
     }
@@ -257,39 +240,62 @@ trait BaseIndexTrait
     }
 
     /**
-     * Add a facet field
-     *
-     * @param $field
-     * @param array $options
+     * Set the fields to use for faceting
+     * @param $fields
      * @return $this
      */
-    public function addFacetField($field, $options): self
+    public function setFacetFields($fields)
     {
-        $this->facetFields[$field] = $options;
-
-        if (!in_array($options['Field'], $this->getFilterFields(), true)) {
-            $this->addFilterField($options['Field']);
+        foreach ($fields as $field => $option) {
+            $this->addFacetField($field, $option);
         }
 
         return $this;
     }
 
     /**
+     * Add a facet field
+     *
+     * @param $field
+     * @param array $options
+     * @return $this
+     */
+    public function addFacetField($field, $options)
+    {
+        $this->facetFields[$field] = $options;
+
+        if (!in_array($options['Field'], $this->getFulltextFields(), true)) {
+            $this->addFulltextField($options['Field']);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFacetFields()
+    {
+        return $this->facetFields;
+    }
+
+    /**
      * Add a filterable field
+     * Compatibility stub for Solr
      *
      * @param $filterField
      * @return $this
      */
     public function addFilterField($filterField): self
     {
-        $key = array_search($filterField, $this->getFulltextFields(), true);
-        if ($key === false) {
-            $this->filterFields[] = $filterField;
-        }
+        $this->addFulltextField($filterField);
 
         return $this;
     }
 
+    /**
+     * @return Client
+     */
     public function getClient(): Client
     {
         return $this->client;
@@ -298,5 +304,28 @@ trait BaseIndexTrait
     public function setClient(Client $client): void
     {
         $this->client = $client;
+    }
+
+    /**
+     * @return array
+     */
+    public function getStoredFields(): array
+    {
+        return $this->storedFields;
+    }
+
+    /**
+     * Stub to be compatible with Solr. Elastic stores everything anyway
+     * @param array $storedFields
+     * @return $this
+     */
+    public function setStoredFields(array $storedFields)
+    {
+        $this->storedFields = $storedFields;
+        foreach ($storedFields as $storedField) {
+            $this->addFulltextField($storedField);
+        }
+
+        return $this;
     }
 }
