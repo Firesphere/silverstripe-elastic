@@ -72,11 +72,10 @@ class ElasticIndexTest extends SapphireTest
         $this->assertEquals($this->indexConfig['FulltextFields'], $index->getFulltextFields());
 
         // Add/set/get SortFields
-        $conf = $this->indexConfig;
         $this->assertEquals([], $index->getSortFields());
         $index->addSortField('Blub');
         $this->assertContains('Blub', $index->getFulltextFields());
-        $this->assertEquals([], $index->getSortFields());
+        $this->assertEquals(['Blub'], $index->getSortFields());
 
         $this->assertEquals($this->indexConfig['FacetFields'], $index->getFacetFields());
     }
