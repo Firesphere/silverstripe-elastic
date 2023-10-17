@@ -4,7 +4,6 @@ namespace Firesphere\ElasticSearch\Tests;
 
 use Elastic\Elasticsearch\Client;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
-use Firesphere\StickerTrade\Indexes\ElasticStickerIndex as SearchIndex;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use App\src\SearchIndex;
