@@ -60,6 +60,7 @@ class ElasticIndexTest extends SapphireTest
             $conf['FilterFields'] ?? [],
             $conf['SortFields'] ?? []
         );
+        $conf['FacetFields'] = $conf['FacetFields'] ?? [];
         foreach ($conf['FacetFields'] as $field => $options) {
             $conf['FulltextFields'][] = $options['Field'];
         }
