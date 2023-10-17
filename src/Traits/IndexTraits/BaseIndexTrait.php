@@ -71,6 +71,7 @@ trait BaseIndexTrait
     public function addSortField($sortField): self
     {
         $this->addFulltextField($sortField);
+        $this->sortFields[] = $sortField;
 
         return $this;
     }

@@ -11,7 +11,13 @@ use App\src\SearchIndex;
 
 class ElasticIndexTest extends SapphireTest
 {
+    /**
+     * @var ElasticIndex
+     */
     private $index;
+    /**
+     * @var array
+     */
     private $indexConfig;
 
     protected function setUp(): void
@@ -73,5 +79,14 @@ class ElasticIndexTest extends SapphireTest
         $this->assertEquals([], $index->getSortFields());
 
         $this->assertEquals($this->indexConfig['FacetFields'], $index->getFacetFields());
+    }
+
+    public function testAddAllFields()
+    {
+        $index = $this->index;
+
+        $index->addAllFulltextFields();
+
+        $this->assertIsArray($index->getFulltextFields());
     }
 }
