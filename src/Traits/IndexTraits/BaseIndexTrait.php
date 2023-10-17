@@ -289,6 +289,7 @@ trait BaseIndexTrait
      */
     public function addFilterField($filterField): self
     {
+        $this->filterFields[] = $filterField;
         $this->addFulltextField($filterField);
 
         return $this;
