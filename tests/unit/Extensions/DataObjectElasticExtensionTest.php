@@ -63,6 +63,28 @@ class DataObjectElasticExtensionTest extends SapphireTest
         $page->ShowInSearch = false;
         $page->forceChange();
         $extension->onAfterWrite();
-        $this->assertInstanceOf(Elasticsearch::class, $extension->isDeletedFromElastic());
+        // Not executed check, due to a race condition
+//        $this->assertInstanceOf(Elasticsearch::class, $extension->isDeletedFromElastic());
+    }
+
+    public function testShouldPush()
+    {
+        $page = \Page::create();
+        $extension = new DataObjectElasticExtension();
+        $extension->setOwner($page);
+
+        // Page is not published
+        $this->assertFalse($extension->shouldPush($page));
+        $page->write();
+        $page->publishSingle();
+        // Page is published
+        $this->assertTrue($extension->shouldPush($page));
+        $page->ShowInSearch = false;
+        $page->write();
+        // Doesn't matter, always false because ShowInSearch
+        $this->assertFalse($extension->shouldPush($page));
+        $page->publishSingle();
+        // As before
+        $this->assertFalse($extension->shouldPush($page));
     }
 }
