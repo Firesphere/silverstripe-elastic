@@ -12,11 +12,15 @@ namespace Firesphere\ElasticSearch\Extensions;
 
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
+use Elastic\Elasticsearch\Response\Elasticsearch;
 use Exception;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
+use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
+use Http\Promise\Promise;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
@@ -31,13 +35,25 @@ use SilverStripe\Versioned\Versioned;
  */
 class DataObjectElasticExtension extends DataExtension
 {
+    protected $deletedFromElastic;
     /**
      * @throws NotFoundExceptionInterface
-     * @throws ValidationException
      */
     public function onAfterDelete()
     {
         parent::onAfterDelete();
+        $this->deleteFromElastic();
+    }
+
+    /**
+     * Can be called directly, if a DataObject needs to be removed
+     * immediately.
+     * @return bool|Elasticsearch|Promise
+     * @throws NotFoundExceptionInterface
+     */
+    public function deleteFromElastic()
+    {
+        $result = false;
         $service = new ElasticCoreService();
         $indexes = $service->getValidIndexes();
         foreach ($indexes as $index) {
@@ -45,20 +61,22 @@ class DataObjectElasticExtension extends DataExtension
             $idx = Injector::inst()->get($index);
             $config = ElasticIndex::config()->get($idx->getIndexName());
             if (in_array($this->owner->ClassName, $config['Classes'])) {
-                $deleteQuery = $this->getDeleteQuery($index);
-                $this->executeQuery($service, $deleteQuery);
+                $deleteQuery = $this->getDeleteQuery($idx);
+                $result = $this->executeQuery($service, $deleteQuery);
             }
         }
+
+        return $result;
     }
 
     /**
-     * @param mixed $index
+     * @param ElasticIndex $index
      * @return array
      */
-    public function getDeleteQuery(mixed $index): array
+    private function getDeleteQuery(ElasticIndex $index): array
     {
         return [
-            'index' => $index,
+            'index' => $index->getIndexName(),
             'body'  => [
                 'query' => [
                     'match' => [
@@ -72,46 +90,65 @@ class DataObjectElasticExtension extends DataExtension
     /**
      * @param ElasticCoreService $service
      * @param array $deleteQuery
-     * @return void
+     * @return Elasticsearch|Promise|bool
      * @throws NotFoundExceptionInterface
      */
-    protected function executeQuery(ElasticCoreService $service, array $deleteQuery): void
+    protected function executeQuery(ElasticCoreService $service, array $deleteQuery)
     {
         try {
-            $service->getClient()->deleteByQuery($deleteQuery);
+            return $service->getClient()->deleteByQuery($deleteQuery);
         } catch (Exception $e) {
-            $dirty = $this->owner->getDirtyClass('DELETE');
+            /** @var DataObjectSearchExtension|DataObject $owner */
+            $owner = $this->owner;
+            // DirtyClass handling is a DataObject Search Core extension
+            $dirty = $owner->getDirtyClass('DELETE');
             $ids = json_decode($dirty->IDs ?? '[]');
-            $ids[] = $this->owner->ID;
+            $ids[] = $owner->ID;
             $dirty->IDs = json_encode($ids);
             $dirty->write();
             /** @var LoggerInterface $logger */
             $logger = Injector::inst()->get(LoggerInterface::class);
             $logger->error($e->getMessage(), $e->getTrace());
+
+            return false;
         }
     }
 
     /**
      * Reindex after write, if it's an indexed new/updated object
+     * @throws ClientResponseException
+     * @throws NotFoundExceptionInterface
+     * @throws ServerResponseException
      */
     public function onAfterWrite()
     {
         parent::onAfterWrite();
-        if (
-            !$this->owner->hasExtension(Versioned::class) ||
-            ($this->owner->hasExtension(Versioned::class) && $this->owner->isPublished())
-        ) {
-            $this->doIndex();
+        /** @var DataObject|SiteTree|DataObjectElasticExtension|DataObjectSearchExtension|Versioned $owner */
+        $owner = $this->owner;
+        if ($this->shouldPush($owner)) {
+            $this->pushToElastic();
+        }
+
+        if ($owner->hasField('ShowInSearch') &&
+            $owner->isChanged('ShowInSearch') &&
+            !$owner->ShowInSearch) {
+            $this->deletedFromElastic = $this->deleteFromElastic();
         }
     }
 
     /**
-     * @throws NotFoundExceptionInterface
+     * This is a separate method from the delete action, as it's a different route
+     * and query components.
+     * It can be called to add an object to the index immediately, without
+     * requiring a write.
+     * @return mixed
      * @throws ClientResponseException
+     * @throws NotFoundExceptionInterface
      * @throws ServerResponseException
      */
-    private function doIndex()
+    public function pushToElastic()
     {
+        $result = false;
         $list = ArrayList::create();
         $list->push($this->owner);
         /** @var ElasticCoreService $service */
@@ -121,8 +158,47 @@ class DataObjectElasticExtension extends DataExtension
             $index = Injector::inst()->get($indexStr);
             $idxConfig = ElasticIndex::config()->get($index->getIndexName());
             if (in_array($this->owner->ClassName, $idxConfig['Classes'])) {
-                $service->updateIndex($index, $list);
+                $result = $service->updateIndex($index, $list);
             }
         }
+
+        return $result;
+    }
+
+    /**
+     * Add ability to see what the response
+     * from Elasticsearch was after a delete action.
+     *
+     * @return mixed
+     */
+    public function isDeletedFromElastic()
+    {
+        return $this->deletedFromElastic;
+    }
+
+    /**
+     * Check if:
+     * - Owner has Versioned
+     * - The versioned object is published
+     * - The owner has the "ShowInSearch" Field
+     * - And if so, is it set.
+     * @param SiteTree|DataObjectSearchExtension|DataObjectElasticExtension|Versioned|DataObject $owner
+     * @return bool
+     */
+    public function shouldPush(DataObject $owner): bool
+    {
+        $showInSearch = true;
+        $versioned = $owner->hasExtension(Versioned::class);
+        if ($versioned) {
+            $versioned = $owner->isPublished();
+        } else {
+            // The owner is not versioned, so no publishing check
+            $versioned = true;
+        }
+        $hasField = $owner->hasField('ShowInSearch');
+        if ($hasField) {
+            $showInSearch = $owner->ShowInSearch;
+        }
+        return ($versioned && $showInSearch);
     }
 }

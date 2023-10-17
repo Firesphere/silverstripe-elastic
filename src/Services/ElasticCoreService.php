@@ -14,9 +14,11 @@ use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Exception\AuthenticationException;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
+use Elastic\Elasticsearch\Response\Elasticsearch;
 use Firesphere\ElasticSearch\Factories\DocumentFactory;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\SearchBackend\Services\BaseService;
+use Http\Promise\Promise;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionException;
 use SilverStripe\Core\Config\Configurable;
@@ -80,6 +82,9 @@ class ElasticCoreService extends BaseService
         if ($config['endpoint'] === 'ENVIRONMENT') {
             $endpoint0 = [];
             foreach (self::ENVIRONMENT_VARS as $envVar => $elasticVar) {
+                if (!Environment::hasEnv($envVar)) {
+                    continue; // skip vars not set
+                }
                 $endpoint0[$elasticVar] = Environment::getEnv($envVar);
             }
         } else {
@@ -100,9 +105,10 @@ class ElasticCoreService extends BaseService
     {
         $builder = ClientBuilder::create()
             ->setHosts([$uri]);
-        if ($endpoint0['apiKey']) {
+        if (isset($endpoint0['apiKey'])) {
             $builder->setApiKey($endpoint0['apiKey']);
-        } elseif ($endpoint0['username'] && $endpoint0['password']) {
+        }
+        if (isset($endpoint0['username']) && isset($endpoint0['password'])) {
             $builder->setBasicAuthentication($endpoint0['username'], $endpoint0['password']);
         }
         // Disable the SSL Certificate check
@@ -126,24 +132,28 @@ class ElasticCoreService extends BaseService
     /**
      * @param ElasticIndex $index
      * @param SS_List $items
-     * @return void|array
+     * @return array|bool|Elasticsearch|Promise
      * @throws NotFoundExceptionInterface
      * @throws ClientResponseException
      * @throws ServerResponseException
      */
     public function updateIndex($index, $items, $returnDocs = false)
     {
+        $result = null;
         $fields = $index->getFieldsForIndexing();
         $factory = $this->getFactory($items);
         $docs = $factory->buildItems($fields, $index);
         $body = ['body' => []];
         if (count($docs)) {
             $body = $this->buildBody($docs, $index);
-            $this->client->bulk($body);
+            $result = $this->client->bulk($body);
         }
         if ($returnDocs) {
             return $body['body'];
         }
+
+        return $result;
+
     }
 
     /**

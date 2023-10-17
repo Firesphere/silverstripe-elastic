@@ -6,6 +6,9 @@ use App\src\SearchIndex;
 use Firesphere\ElasticSearch\Queries\Builders\QueryBuilder;
 use SilverStripe\Dev\SapphireTest;
 
+/**
+ * @package Firesphere\Elastic\Tests
+ */
 class QueryBuilderTest extends SapphireTest
 {
     protected static $expected_query = [
@@ -107,7 +110,7 @@ class QueryBuilderTest extends SapphireTest
         $resultQuery = QueryBuilder::buildQuery($query, $idx);
 
         $this->assertArrayHasKey('highlight', $resultQuery['body']);
-        
+
         $query->addTerm('Test Tset');
         $resultQuery = QueryBuilder::buildQuery($query, $idx);
 

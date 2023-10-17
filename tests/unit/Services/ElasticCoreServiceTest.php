@@ -9,6 +9,9 @@ use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 
+/**
+ * @package Firesphere\Elastic\Tests
+ */
 class ElasticCoreServiceTest extends SapphireTest
 {
     protected $usesDatabase = true;
