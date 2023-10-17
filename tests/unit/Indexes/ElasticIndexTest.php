@@ -76,9 +76,17 @@ class ElasticIndexTest extends SapphireTest
         $index->addSortField('Blub');
         $this->assertContains('Blub', $index->getFulltextFields());
         $this->assertEquals(['Blub'], $index->getSortFields());
+        $index->setSortFields(['Blub', 'Blubblub']);
+        $this->assertContains('Blubblub', $index->getFullTextFields());
 
         // No facets set yet
         $this->assertEquals([], $index->getFacetFields());
+
+        $index->setFacetFields([\Page::class => ['Field' => 'MyContent']]);
+        $this->assertEquals([\Page::class => ['Field' => 'MyContent']], $index->getFacetFields());
+        $this->assertContains('MyContent', $index->getFulltextFields());
+        $index->addFacetField('Field1', ['Field' => 'Field1']);
+        $this->assertArrayHasKey('Field1', $index->getFacetFields());
     }
 
     public function testAddAllFields()
@@ -88,5 +96,8 @@ class ElasticIndexTest extends SapphireTest
         $index->addAllFulltextFields();
 
         $this->assertIsArray($index->getFulltextFields());
+        $array = $index->getFulltextFields();
+        $index->addAllDateFields();
+        $this->assertNotEquals($array, $index->getFulltextFields());
     }
 }
