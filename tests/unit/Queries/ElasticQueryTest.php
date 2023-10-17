@@ -1,6 +1,6 @@
 <?php
 
-namespace Firesphere\Elasticsearch\Tests;
+namespace Firesphere\ElasticSearch\Tests;
 
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use SilverStripe\Dev\SapphireTest;
