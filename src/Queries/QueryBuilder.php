@@ -14,6 +14,7 @@ use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use Firesphere\SearchBackend\Indexes\CoreIndex;
 use Firesphere\SearchBackend\Interfaces\QueryBuilderInterface;
 use Firesphere\SearchBackend\Queries\BaseQuery;
+use SilverStripe\Core\ClassInfo;
 
 /**
  * Class QueryBuilder
@@ -43,20 +44,32 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $self = self::init($query, $index);
         $filters = $self->getFilters($index, $query);
-        $terms = $self->getUserQuery($query); // There's always a term
-        $terms = array_merge($terms, $filters);
+        $terms = $self->getUserQuery($query);
+        $highlights = $self->getHighlighter();
+        $suggests = $self->getSuggestTermList();
+        $aggregates = $self->getAggregates();
+        $body = [];
+        if (count($terms)) {
+            $body['query']['bool'] = $terms;
+        }
+        if (count($filters)) {
+            $body['query']['bool'] += $filters;
+        }
+        if (count($highlights)) {
+            $body['highlight'] = $highlights;
+        }
+        if (count($suggests)) {
+            $body['suggest'] = $suggests;
+        }
+        if (count($aggregates)) {
+            $body['aggs'] = $aggregates;
+        }
 
         return [
             'index' => $index->getIndexName(),
             'from'  => $query->getStart(),
             'size'  => $query->getRows() * 2, // To be on the safe side
-            'body'  => [
-                'query'     => [
-                    'bool' => $terms,
-                ],
-                'highlight' => $self->getHighlighter(),
-                'suggest'   => $self->suggestList()
-            ]
+            'body'  => $body
         ];
     }
 
@@ -161,16 +174,18 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $q = [];
         $terms = $query->getTerms();
+        // Until wildcards work, just set it to match
         $type = 'match';
         if (!count($terms)) {
-            $type = 'wildcard';
-            $terms = ['*'];
+            $terms = ['text' => '*'];
         }
         foreach ($terms as $term) {
-            $q['must'][] = ['match' => ['_text' => $term['text']]];
-            if ($type !== 'wildcard') {
-                $q = $this->getFieldBoosting($term, $type, $q);
-            }
+            $q['must'][] = [
+                $type => [
+                    '_text' => $term['text']
+                ]
+            ];
+            $q = $this->getFieldBoosting($term, $type, $q);
         }
 
         return $q;
@@ -236,7 +251,7 @@ class QueryBuilder implements QueryBuilderInterface
         return [];
     }
 
-    private function suggestList()
+    private function getSuggestTermList()
     {
         $terms = $this->query->getTerms();
         $suggest = [];
@@ -256,5 +271,25 @@ class QueryBuilder implements QueryBuilderInterface
         }
 
         return $suggest;
+    }
+
+    public function getAggregates()
+    {
+        $aggregates = [];
+
+        $facets = $this->index->getFacetFields();
+
+        foreach ($facets as $class => $facet) {
+            $shortClass = ClassInfo::shortName($facet['BaseClass']);
+            $field = sprintf('%s.%s.keyword', $shortClass, $facet['Field']);
+            $aggregates[$facet['Title']] = [
+                'terms' => [
+                    'field' => $field
+                ]
+
+            ];
+        }
+
+        return $aggregates;
     }
 }

@@ -57,7 +57,6 @@ class QueryBuilderTest extends SapphireTest
                     ]
                 ]
             ],
-            'highlight' => [],
             'suggest'   => [
                 '0-fullterm' => [
                     'text' => 'TestSearch',

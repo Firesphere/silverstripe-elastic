@@ -76,6 +76,9 @@ class SearchResult extends ViewableData implements SearchResultInterface
         $this->setMatches($result->hits->hits)
             ->setSpellcheck($resultArray['suggest'] ?? [])
             ->setTotalItems($result->hits->total->value);
+        if (property_exists($result, 'aggregations')) {
+            $this->setFacets($result->aggregations);
+        }
     }
 
     /**
@@ -253,9 +256,40 @@ class SearchResult extends ViewableData implements SearchResultInterface
     /**
      * {@inheritDoc}
      */
-    public function createFacet($facets, $options, $class, array $facetArray)
+    public function createFacet($facets, $options, $class, array $facetArray): array
     {
+        $facet = $options['Title'];
+        if (property_exists($facets, $facet)) {
+            $buckets = $facets->$facet;
+            $field = explode('.', $options['Field']);
+            array_shift($field);
+            $field = implode('.', $field);
+            $result = $this->getClassFacet($field, $buckets, $class);
+            $facetArray[$facet] = $result;
+        }
+
         return $facetArray;
+    }
+
+    /**
+     * @param string $field
+     * @param stdClass $buckets
+     * @param string $class
+     * @return ArrayList
+     */
+    private function getClassFacet($field, $buckets, $class): ArrayList
+    {
+        $result = ArrayList::create();
+        foreach ($buckets->buckets as $bucket) {
+            $q = [$field => $bucket->key];
+            $facetItem = $class::get()->filter($q)->first();
+            if ($facetItem) {
+                $facetItem->FacetCount = $bucket->doc_count;
+                $result->push($facetItem);
+            }
+        }
+
+        return $result->sort(['FacetCount' => 'DESC', 'Title' => 'ASC',]);
     }
 
     /**
