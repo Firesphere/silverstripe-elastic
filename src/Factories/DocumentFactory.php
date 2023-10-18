@@ -124,9 +124,9 @@ class DocumentFactory extends DocumentCoreFactory
      */
     protected function addToDoc(&$doc, $options, $value): void
     {
-        /* Elastic requires dates in the form yyyy/MM/dd HH:mm:ss Z, so we need to normalize to GMT */
-        if ($value instanceof DBDate) {
-            $value = gmdate('Y/m/d H:i:s\Z', strtotime($value));
+        /* Elastic requires dates in the form of a timestamp?, so we need to normalize to GMT */
+        if (str_contains($options['type'], 'Date')) {
+            $value = strtotime((string)$value);
         }
 
         $name = $this->getShortFieldName($options['name']);
