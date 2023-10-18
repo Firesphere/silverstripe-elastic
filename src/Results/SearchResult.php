@@ -75,8 +75,10 @@ class SearchResult extends ViewableData implements SearchResultInterface
 
         $this->setMatches($result->hits->hits)
             ->setSpellcheck($resultArray['suggest'] ?? [])
-            ->setFacets($result->aggregations)
             ->setTotalItems($result->hits->total->value);
+        if (property_exists('aggregations', $result)) {
+            $this->setFacets($result->aggregations);
+        }
     }
 
     /**
