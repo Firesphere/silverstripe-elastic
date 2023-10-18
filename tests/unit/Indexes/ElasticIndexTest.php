@@ -2,11 +2,11 @@
 
 namespace Firesphere\ElasticSearch\Tests;
 
+use App\src\SearchIndex;
 use Elastic\Elasticsearch\Client;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
-use App\src\SearchIndex;
 
 class ElasticIndexTest extends SapphireTest
 {
@@ -57,13 +57,7 @@ class ElasticIndexTest extends SapphireTest
         $conf = $this->indexConfig;
         $conf['FulltextFields'] = array_merge(
             $conf['FulltextFields'] ?? [],
-            $conf['FilterFields'] ?? [],
-            $conf['SortFields'] ?? []
         );
-        $conf['FacetFields'] = $conf['FacetFields'] ?? [];
-        foreach ($conf['FacetFields'] as $field => $options) {
-            $conf['FulltextFields'][] = $options['Field'];
-        }
         $this->assertEquals($conf['FulltextFields'], $index->getFulltextFields());
         $index->addFulltextField('Dummyfield');
         $conf['FulltextFields'][] = 'Dummyfield';
@@ -88,8 +82,14 @@ class ElasticIndexTest extends SapphireTest
         $this->assertContains('FieldC', $index->getFulltextFields());
 
 
-        // No facets set yet
-        $this->assertEquals([], $index->getFacetFields());
+        $expectedFacets = [
+            'TestObject' => [
+                'BaseClass' => 'Page',
+                'Field'     => 'TestObject.Title',
+                'Title'     => 'TestObject',
+            ]
+        ];
+        $this->assertEquals($expectedFacets, $index->getFacetFields());
 
         $index->setFacetFields([\Page::class => ['Field' => 'MyContent']]);
         $this->assertEquals([\Page::class => ['Field' => 'MyContent']], $index->getFacetFields());

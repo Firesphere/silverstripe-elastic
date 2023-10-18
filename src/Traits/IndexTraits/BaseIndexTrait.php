@@ -247,8 +247,9 @@ trait BaseIndexTrait
      */
     public function setFacetFields($fields)
     {
+        $this->facetFields = $fields;
         foreach ($fields as $field => $option) {
-            $this->addFacetField($field, $option);
+            $this->addFulltextField($option['Field']);
         }
 
         return $this;

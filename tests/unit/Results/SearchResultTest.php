@@ -51,7 +51,7 @@ class SearchResultTest extends SapphireTest
         $this->assertInstanceOf(ArrayList::class, $result->getMatches());
         $this->assertInstanceOf(ArrayData::class, $result->getFacets());
         /** @var ArrayList $testFacet */
-        $testFacet = $result->getFacets()['TestObject'];
+        $testFacet = $result->getFacets()->TestObject;
         $this->assertEquals(1, $testFacet->count());
         $this->assertInstanceOf(TestObject::class, $testFacet->first());
     }

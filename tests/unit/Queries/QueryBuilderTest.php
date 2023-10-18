@@ -16,7 +16,7 @@ class QueryBuilderTest extends SapphireTest
         'from'  => 0,
         'size'  => 20,
         'body'  => [
-            'query'     => [
+            'query'   => [
                 'bool' => [
                     'must'   => [
                         [
@@ -57,11 +57,18 @@ class QueryBuilderTest extends SapphireTest
                     ]
                 ]
             ],
-            'suggest'   => [
+            'suggest' => [
                 '0-fullterm' => [
                     'text' => 'TestSearch',
                     'term' => [
                         'field' => '_text'
+                    ]
+                ]
+            ],
+            'aggs'    => [
+                'TestObject' => [
+                    'terms' => [
+                        'field' => 'Page.TestObject.Title.keyword'
                     ]
                 ]
             ]
