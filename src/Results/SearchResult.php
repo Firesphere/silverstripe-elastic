@@ -71,13 +71,13 @@ class SearchResult extends ViewableData implements SearchResultInterface
         $this->query = $query;
         $this->elasticResult = $result;
         $resultArray = $result->asArray();
-        $result = $result->asObject();
+        $resultObject = $result->asObject();
 
-        $this->setMatches($result->hits->hits)
+        $this->setMatches($resultObject->hits->hits)
             ->setSpellcheck($resultArray['suggest'] ?? [])
-            ->setTotalItems($result->hits->total->value);
-        if (property_exists($result, 'aggregations')) {
-            $this->setFacets($result->aggregations);
+            ->setTotalItems($resultObject->hits->total->value);
+        if (property_exists($resultObject, 'aggregations')) {
+            $this->setFacets($resultObject->aggregations);
         }
     }
 
@@ -87,7 +87,7 @@ class SearchResult extends ViewableData implements SearchResultInterface
      * @param array $spellcheck
      * @return SearchResult
      */
-    private function setSpellcheck($spellcheck): self
+    protected function setSpellcheck($spellcheck): self
     {
         $spellcheckList = [];
 

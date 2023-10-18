@@ -1,0 +1,107 @@
+{
+  "took": 1,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 2,
+      "relation": "eq"
+    },
+    "max_score": 1.2213857,
+    "hits": [
+      {
+        "_index": "search-testindex",
+        "_id": "TestPage-6-de940140432a11cd1e4ec6c0eadb9d87",
+        "_score": 1.2213857,
+        "_source": {
+          "SiteTree.Title": "Test page",
+          "SiteTree.Created": "2023-10-18 07:58:28",
+          "SiteTree.Content": null,
+          "Page.TestObject.Title": null,
+          "Page.TestObject.TestRelation.Title": [],
+          "Page.RelationObject.Title": [
+            null
+          ],
+          "_text": "Test page, 2023-10-18 07:58:28, , , , ",
+          "id": "TestPage-6",
+          "ObjectID": 6,
+          "UniqueKey": "TestPage-6-de940140432a11cd1e4ec6c0eadb9d87",
+          "ClassName": "TestPage",
+          "ClassHierarchy": [
+            "SilverStripe\\View\\ViewableData",
+            "SilverStripe\\ORM\\DataObject",
+            "SilverStripe\\CMS\\Model\\SiteTree",
+            "Page",
+            "TestPage"
+          ],
+          "ViewStatus": [
+            "null"
+          ],
+          "_extract_binary_content": true,
+          "_reduce_whitespace": true,
+          "_run_ml_inference": false
+        }
+      },
+      {
+        "_index": "search-testindex",
+        "_id": "TestPage-7-c0b86d17ae9bf14a86b3821b15ff9bb7",
+        "_score": 1.1700189,
+        "_source": {
+          "SiteTree.Title": "Test page",
+          "SiteTree.Created": "2023-10-18 08:08:47",
+          "SiteTree.Content": null,
+          "Page.TestObject.Title": "TestObject",
+          "Page.TestObject.TestRelation.Title": [],
+          "Page.RelationObject.Title": [
+            "TestRelationObject"
+          ],
+          "_text": "Test page, 2023-10-18 08:08:47, , TestObject, , TestRelationObject",
+          "id": "TestPage-7",
+          "ObjectID": 7,
+          "UniqueKey": "TestPage-7-c0b86d17ae9bf14a86b3821b15ff9bb7",
+          "ClassName": "TestPage",
+          "ClassHierarchy": [
+            "SilverStripe\\View\\ViewableData",
+            "SilverStripe\\ORM\\DataObject",
+            "SilverStripe\\CMS\\Model\\SiteTree",
+            "Page",
+            "TestPage"
+          ],
+          "ViewStatus": [
+            "null"
+          ],
+          "_extract_binary_content": true,
+          "_reduce_whitespace": true,
+          "_run_ml_inference": false
+        }
+      }
+    ]
+  },
+  "aggregations": {
+    "TestObject": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": "TestObject",
+          "doc_count": 1
+        }
+      ]
+    }
+  },
+  "suggest": {
+    "0-fullterm": [
+      {
+        "text": "test",
+        "offset": 0,
+        "length": 4,
+        "options": []
+      }
+    ]
+  }
+}
