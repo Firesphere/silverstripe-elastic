@@ -20,7 +20,7 @@ class EndToEndTest extends SapphireTest
         /** @var ElasticIndex $index */
         $index = new SearchIndex();
         $query = new ElasticQuery();
-        $query->addTerm('Silverstripe');
+        $query->addTerm('Home');
         $results = $index->doSearch($query);
         $this->assertArrayHasKey('index', $index->getClientQuery());
         $this->assertGreaterThan(0, $results->getTotalItems());
