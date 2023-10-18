@@ -13,9 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: ddev/github-action-setup-ddev@v1
+      - run: git clone https://github.com/Firesphere/search-testapp.git app
       - run: ddev composer install --prefer-dist --no-interaction --no-progress
       - run: ddev composer vendor-expose
-      - run: git clone https://github.com/Firesphere/search-testapp.git app
       - run: cp example.env .env
       - run: ddev sake dev/build
       - run: ddev xdebug
