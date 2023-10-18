@@ -126,7 +126,7 @@ class DocumentFactory extends DocumentCoreFactory
     {
         /* Elastic requires dates in the form of a timestamp?, so we need to normalize to GMT */
         if (str_contains($options['type'], 'Date')) {
-            $value = strtotime($value);
+            $value = strtotime((string)$value);
         }
 
         $name = $this->getShortFieldName($options['name']);
