@@ -1,4 +1,11 @@
 <?php
+/**
+ * class ElasticConfigureTask|Firesphere\ElasticSearch\Tasks\ElasticConfigureTask Configure custom mappings in Elastic
+ *
+ * @package Firesphere\Elastic\Search
+ * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
+ * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ */
 
 namespace Firesphere\ElasticSearch\Tasks;
 
@@ -19,6 +26,12 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DB;
 
+/**
+ * Class ElasticConfigureTask
+ *
+ * Used to create field-specific mappings in Elastic. Not explicitly needed for a basic search
+ * functionality, but does add filter/sort/aggregate features without the performance drawback
+ */
 class ElasticConfigureTask extends BuildTask
 {
     use LoggerTrait;
