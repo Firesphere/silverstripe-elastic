@@ -86,7 +86,7 @@ class QueryBuilderTest extends SapphireTest
 
         $this->assertEquals('Home', $query->getFilters()['SiteTree.Title']);
         $this->assertEquals('Away', $query->getOrFilters()['SiteTree.Title']);
-        $this->assertEquals([['text' => 'TestSearch', 'fields' => [], 'boost' => 1]], $query->getTerms());
+        $this->assertEquals([['text' => 'TestSearch', 'fields' => [], 'boost' => 1, 'fuzzy' => null]], $query->getTerms());
 
         $resultQuery = QueryBuilder::buildQuery($query, $idx);
 
@@ -129,5 +129,11 @@ class QueryBuilderTest extends SapphireTest
         $resultQuery = QueryBuilder::buildQuery($query, $idx);
 
         $this->assertEquals(['Title' => 'asc'], $resultQuery['body']['sort']);
+
+        $query->addTerm('Filt', [], 1, 1);
+
+        $resultQuery = QueryBuilder::buildQuery($query, $idx);
+
+        $this->assertArrayHasKey('fuzzy', $resultQuery['body']['query']['bool']['must'][2]);
     }
 }

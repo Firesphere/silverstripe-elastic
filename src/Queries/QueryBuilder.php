@@ -181,12 +181,19 @@ class QueryBuilder implements QueryBuilderInterface
         // Until wildcard||fuzziness works, just set it to match
         $type = 'match';
         foreach ($terms as $term) {
+            if ($term['fuzzy'] !== null) {
+                $type = 'fuzzy';
+            }
             $q['must'][] = [
                 $type => [
                     '_text' => $term['text']
                 ]
             ];
-            $q = $this->getFieldBoosting($term, $type, $q);
+            if ($type === 'match') {
+                $q = $this->getFieldBoosting($term, $type, $q);
+            }
+            // reset to default of "must match"
+            $type = 'match';
         }
 
         return $q;
