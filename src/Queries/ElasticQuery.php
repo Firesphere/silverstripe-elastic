@@ -31,7 +31,8 @@ class ElasticQuery extends BaseQuery
         $this->terms[] = [
             'text'   => $term,
             'fields' => $fields,
-            'boost'  => $boost
+            'boost'  => $boost,
+            'fuzzy' => $fuzzy
         ];
 
         return $this;

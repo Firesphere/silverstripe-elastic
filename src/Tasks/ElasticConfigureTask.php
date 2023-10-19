@@ -37,6 +37,10 @@ class ElasticConfigureTask extends BuildTask
     use LoggerTrait;
 
     /**
+     * @var bool[]
+     */
+    public $result;
+    /**
      * @var string URLSegment
      */
     private static $segment = 'ElasticConfigureTask';
@@ -76,7 +80,7 @@ class ElasticConfigureTask extends BuildTask
      * Run the config
      *
      * @param HTTPRequest $request
-     * @return void|array
+     * @return void
      * @throws NotFoundExceptionInterface
      */
     public function run($request)
@@ -114,7 +118,7 @@ class ElasticConfigureTask extends BuildTask
         $this->extend('onAfterElasticConfigureTask');
 
         if ($request->getVar('istest')) {
-            return $result;
+            $this->result = $result;
         }
     }
 
@@ -135,25 +139,22 @@ class ElasticConfigureTask extends BuildTask
 
         $mappings = $this->convertForJSON($instanceConfig);
 
-        $body['index'] = $indexName;
+        $body = ['index' => $indexName];
         $client = $this->service->getClient();
 
         $method = $this->getMethod($instance);
         $msg = "%s index %s";
-        if ($method === 'update') {
-            $body['body'] = $mappings;
-            $msg = sprintf($msg, 'Updating', $indexName);
-            DB::alteration_message($msg);
-            $this->getLogger()->info($msg);
-
-            return $client->indices()->putMapping($body);
+        $msgType = 'Updating';
+        if ($method === 'create') {
+            $mappings = ['mappings' => $mappings];
+            $msgType = 'Creating';
         }
-        $body['body']['mappings'] = $mappings;
-        $msg = sprintf($msg, 'Creating', $indexName);
+        $body['body'] = $mappings;
+        $msg = sprintf($msg, $msgType, $indexName);
         DB::alteration_message($msg);
         $this->getLogger()->info($msg);
 
-        return $client->indices()->create($body);
+        return $client->indices()->$method($body);
     }
 
     /**
@@ -223,7 +224,7 @@ class ElasticConfigureTask extends BuildTask
         $check = $index->indexExists();
 
         if ($check) {
-            return 'update';
+            return 'putMapping';
         }
 
         return 'create';
