@@ -41,6 +41,16 @@ class ElasticConfigureTask extends BuildTask
     protected $service;
 
     /**
+     * DBHTML and DBText etc. should never be made sortable
+     * It doesn't make sense for large text objects
+     * @var string[]
+     */
+    private static $unSsortables = [
+        'HTML',
+        'Text'
+    ];
+
+    /**
      * @throws NotFoundExceptionInterface
      */
     public function __construct()
@@ -108,7 +118,6 @@ class ElasticConfigureTask extends BuildTask
     {
         $indexName = $instance->getIndexName();
 
-
         $instanceConfig = $this->createConfigForIndex($instance);
 
         $mappings = $this->convertForJSON($instanceConfig);
@@ -123,14 +132,15 @@ class ElasticConfigureTask extends BuildTask
             $msg = sprintf($msg, 'Updating', $indexName);
             DB::alteration_message($msg);
             $this->getLogger()->info($msg);
+
             return $client->indices()->putMapping($body);
-        } else {
-            $body['body']['mappings'] = $mappings;
-            $msg = sprintf($msg, 'Creating', $indexName);
-            DB::alteration_message($msg);
-            $this->getLogger()->info($msg);
-            return $client->indices()->create($body);
         }
+        $body['body']['mappings'] = $mappings;
+        $msg = sprintf($msg, 'Creating', $indexName);
+        DB::alteration_message($msg);
+        $this->getLogger()->info($msg);
+
+        return $client->indices()->create($body);
     }
 
     /**
@@ -171,6 +181,13 @@ class ElasticConfigureTask extends BuildTask
             $base[$conf['name']] = [
                 'type' => $typeMap[$conf['type'] ?? '*']
             ];
+            $shouldHold = true;
+            foreach (self::$unSsortables as $unSortable) {
+                $shouldHold = !str_contains($conf['type'], $unSortable) && $shouldHold;
+            }
+            if ($shouldHold && $typeMap[$conf['type']] === 'text') {
+                $base[$conf['name']]['fielddata'] = true;
+            }
         }
 
         return ['properties' => $base];

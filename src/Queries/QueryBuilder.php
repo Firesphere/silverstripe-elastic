@@ -48,6 +48,7 @@ class QueryBuilder implements QueryBuilderInterface
         $highlights = $self->getHighlighter();
         $suggests = $self->getSuggestTermList();
         $aggregates = $self->getAggregates();
+        $sort = $self->getSort();
         $body = [];
         if (count($terms)) {
             $body['query']['bool'] = $terms;
@@ -63,6 +64,9 @@ class QueryBuilder implements QueryBuilderInterface
         }
         if (count($aggregates)) {
             $body['aggs'] = $aggregates;
+        }
+        if (count($sort)) {
+            $body['sort'] = $sort;
         }
 
         return [
@@ -273,7 +277,12 @@ class QueryBuilder implements QueryBuilderInterface
         return $suggest;
     }
 
-    public function getAggregates()
+    /**
+     * Build the query part for aggregation/faceting
+     *
+     * @return array
+     */
+    private function getAggregates()
     {
         $aggregates = [];
 
@@ -291,5 +300,10 @@ class QueryBuilder implements QueryBuilderInterface
         }
 
         return $aggregates;
+    }
+
+    private function getSort()
+    {
+        return $this->query->getSort();
     }
 }

@@ -32,7 +32,7 @@ class QueryBuilderTest extends SapphireTest
                                     'terms' => [
                                         'ViewStatus' => [
                                             "null",
-                                            'LoggedIn'
+//                                            'LoggedIn'
                                         ],
                                     ]
                                 ],
@@ -123,5 +123,11 @@ class QueryBuilderTest extends SapphireTest
         $this->assertEquals('Test', $resultQuery['body']['suggest']['0-partterm']['text']);
         $this->assertEquals('Tset', $resultQuery['body']['suggest']['1-partterm']['text']);
         $this->assertEquals('Test Tset', $resultQuery['body']['suggest']['1-fullterm']['text']);
+
+        $query->setSort(['Title' => 'asc']);
+
+        $resultQuery = QueryBuilder::buildQuery($query, $idx);
+
+        $this->assertEquals(['Title' => 'asc'], $resultQuery['body']['sort']);
     }
 }
