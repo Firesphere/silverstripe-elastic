@@ -105,7 +105,6 @@ abstract class ElasticIndex extends CoreIndex
         if ($this->shouldClear($request) && $this->indexExists()) {
             $this->getLogger()->info(sprintf('Clearing index %s', $this->getIndexName()));
             $deleteResult = $this->client
-                ->getClient()
                 ->indices()
                 ->delete(['index' => $this->getIndexName()])
                 ->asBool();

@@ -132,7 +132,7 @@ class ElasticIndexTask extends BuildTask
             }
             // If clearing, also configure
             if ($index->deleteIndex($request)) {
-                (new ElasticConfigureTask())->configureIndex($index, $request);
+                (new ElasticConfigureTask())->configureIndex($index);
             }
 
             // Get the groups

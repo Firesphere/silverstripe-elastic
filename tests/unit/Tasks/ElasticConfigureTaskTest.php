@@ -32,9 +32,9 @@ class ElasticConfigureTaskTest extends SapphireTest
     public function testConfigureIndex()
     {
         $index = new SearchIndex();
-
         $task = new ElasticConfigureTask();
+        $result = $task->configureIndex($index);
 
-        $task->deleteIndex()
+        $this->assertTrue($result->asBool());
     }
 }

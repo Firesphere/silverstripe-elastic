@@ -18,6 +18,7 @@ use Firesphere\ElasticSearch\Helpers\Statics;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Helpers\FieldResolver;
+use Firesphere\SearchBackend\Indexes\CoreIndex;
 use Firesphere\SearchBackend\Traits\LoggerTrait;
 use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Control\HTTPRequest;
@@ -95,8 +96,8 @@ class ElasticConfigureTask extends BuildTask
                 /** @var ElasticIndex $instance */
                 $instance = Injector::inst()->get($index, false);
                 // If delete in advance, do so
-                $index->deleteIndex($request);
-                $configResult = $this->configureIndex($instance, $request);
+                $instance->deleteIndex($request);
+                $configResult = $this->configureIndex($instance);
                 $result[] = $configResult->asBool();
             } catch (Exception $error) {
                 // @codeCoverageIgnoreStart
@@ -119,14 +120,13 @@ class ElasticConfigureTask extends BuildTask
     /**
      * Update/create a single index.
      * @param ElasticIndex $index
-     * @param HTTPRequest|null $request
      * @return Elasticsearch
      * @throws ClientResponseException
      * @throws MissingParameterException
      * @throws NotFoundExceptionInterface
      * @throws ServerResponseException
      */
-    public function configureIndex($index, ?HTTPRequest $request = null): Elasticsearch
+    public function configureIndex(CoreIndex $index): Elasticsearch
     {
         $indexName = $index->getIndexName();
 
