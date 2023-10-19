@@ -37,13 +37,22 @@ class ElasticConfigureTask extends BuildTask
     use LoggerTrait;
 
     /**
-     * @var bool[]
-     */
-    public $result;
-    /**
      * @var string URLSegment
      */
     private static $segment = 'ElasticConfigureTask';
+    /**
+     * DBHTML and DBText etc. should never be made sortable
+     * It doesn't make sense for large text objects
+     * @var string[]
+     */
+    private static $unSsortables = [
+        'HTML',
+        'Text'
+    ];
+    /**
+     * @var bool[]
+     */
+    public $result;
     /**
      * @var string Title
      */
@@ -56,16 +65,6 @@ class ElasticConfigureTask extends BuildTask
      * @var ElasticCoreService $service
      */
     protected $service;
-
-    /**
-     * DBHTML and DBText etc. should never be made sortable
-     * It doesn't make sense for large text objects
-     * @var string[]
-     */
-    private static $unSsortables = [
-        'HTML',
-        'Text'
-    ];
 
     /**
      * @throws NotFoundExceptionInterface
@@ -95,14 +94,9 @@ class ElasticConfigureTask extends BuildTask
             try {
                 /** @var ElasticIndex $instance */
                 $instance = Injector::inst()->get($index, false);
-
-                if ($request->getVar('clear') && $instance->indexExists()) {
-                    $this->getLogger()->info(sprintf('Clearing index %s', $instance->getIndexName()));
-                    $deleteResult = $this->service->getClient()->indices()->delete(['index' => $instance->getIndexName()]);
-                    $result[] = $deleteResult->asBool();
-                }
-
-                $configResult = $this->configureIndex($instance);
+                // If delete in advance, do so
+                $index->deleteIndex($request);
+                $configResult = $this->configureIndex($instance, $request);
                 $result[] = $configResult->asBool();
             } catch (Exception $error) {
                 // @codeCoverageIgnoreStart
@@ -123,26 +117,27 @@ class ElasticConfigureTask extends BuildTask
     }
 
     /**
-     * Update/create a store
-     * @param ElasticIndex $instance
+     * Update/create a single index.
+     * @param ElasticIndex $index
+     * @param HTTPRequest|null $request
      * @return Elasticsearch
      * @throws ClientResponseException
      * @throws MissingParameterException
-     * @throws ServerResponseException
      * @throws NotFoundExceptionInterface
+     * @throws ServerResponseException
      */
-    protected function configureIndex($instance): Elasticsearch
+    public function configureIndex($index, ?HTTPRequest $request = null): Elasticsearch
     {
-        $indexName = $instance->getIndexName();
+        $indexName = $index->getIndexName();
 
-        $instanceConfig = $this->createConfigForIndex($instance);
+        $instanceConfig = $this->createConfigForIndex($index);
 
         $mappings = $this->convertForJSON($instanceConfig);
 
         $body = ['index' => $indexName];
         $client = $this->service->getClient();
 
-        $method = $this->getMethod($instance);
+        $method = $this->getMethod($index);
         $msg = "%s index %s";
         $msgType = 'Updating';
         if ($method === 'create') {

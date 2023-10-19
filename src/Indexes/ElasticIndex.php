@@ -18,8 +18,11 @@ use Firesphere\ElasticSearch\Results\SearchResult;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\ElasticSearch\Traits\IndexTraits\BaseIndexTrait;
 use Firesphere\SearchBackend\Indexes\CoreIndex;
+use Firesphere\SearchBackend\Traits\LoggerTrait;
 use Firesphere\SearchBackend\Traits\QueryTraits\QueryFilterTrait;
 use LogicException;
+use Psr\Container\NotFoundExceptionInterface;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
@@ -41,6 +44,7 @@ abstract class ElasticIndex extends CoreIndex
     use Injectable;
     use QueryFilterTrait;
     use BaseIndexTrait;
+    use LoggerTrait;
 
     /**
      * @var array
@@ -85,6 +89,46 @@ abstract class ElasticIndex extends CoreIndex
 
         $this->initFromConfig($config);
     }
+
+
+    /**
+     * @param HTTPRequest|null $request
+     * @return bool
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws NotFoundExceptionInterface
+     * @throws ServerResponseException
+     */
+    public function deleteIndex(?HTTPRequest $request = null): bool
+    {
+        $deleteResult = false;
+        if ($this->shouldClear($request) && $this->indexExists()) {
+            $this->getLogger()->info(sprintf('Clearing index %s', $this->getIndexName()));
+            $deleteResult = $this->client
+                ->getClient()
+                ->indices()
+                ->delete(['index' => $this->getIndexName()])
+                ->asBool();
+        }
+
+        return $deleteResult;
+    }
+
+    /**
+     * @param HTTPRequest|null $request
+     * @return bool
+     */
+    private function shouldClear(?HTTPRequest $request = null): bool
+    {
+        if ($request !== null) {
+            $var = $request->getVar('clear');
+
+            return !empty($var);
+        }
+
+        return false;
+    }
+
 
     /**
      * @return bool
