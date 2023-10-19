@@ -178,11 +178,8 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $q = [];
         $terms = $query->getTerms();
-        // Until wildcards work, just set it to match
+        // Until wildcard||fuzziness works, just set it to match
         $type = 'match';
-        if (!count($terms)) {
-            $terms = ['text' => '*'];
-        }
         foreach ($terms as $term) {
             $q['must'][] = [
                 $type => [
