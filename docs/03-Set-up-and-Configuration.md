@@ -48,11 +48,6 @@ Firesphere\ElasticSearch\Services\ElasticCoreService:
         apiKey: MyBase64EncodedApiKeyHere===
 ```
 
-### Debug
-
-You can force the debugging to false, by setting the debug flag. If you omit this tag, CLI and Dev mode
-will have debugging enabled.
-
 #### ShowInSearch
 
 `ShowInSearch` is handled by the module itself, so there is no need to configure it within your YML/PHP index definition. 
@@ -68,7 +63,6 @@ There is no effective need for items to be in the search, if they're not suppose
 be displayed.
 
 #### Dirty classes
-*NOTE* This is currently unfinished
 
 If a change fails to update, a `DirtyClass` is created, recording the need for updating
 said object. It is recommended to automatically run the `ClearDirtyClasses` task every few hours
@@ -105,7 +99,6 @@ Firesphere\ElasticSearch\Indexes\ElasticIndex:
         Title: TestObject
 
 ```
-**NOTE** Facets are on to-do
 
 #### MySearchIndex
 

@@ -68,7 +68,7 @@ class QueryBuilderTest extends SapphireTest
             'aggs'    => [
                 'TestObject' => [
                     'terms' => [
-                        'field' => 'Page.TestObject.Title.keyword'
+                        'field' => 'Page.TestObject.ID'
                     ]
                 ]
             ]

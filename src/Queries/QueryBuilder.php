@@ -281,7 +281,7 @@ class QueryBuilder implements QueryBuilderInterface
 
         foreach ($facets as $class => $facet) {
             $shortClass = ClassInfo::shortName($facet['BaseClass']);
-            $field = sprintf('%s.%s.keyword', $shortClass, $facet['Field']);
+            $field = sprintf('%s.%s', $shortClass, $facet['Field']);
             $aggregates[$facet['Title']] = [
                 'terms' => [
                     'field' => $field
