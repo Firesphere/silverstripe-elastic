@@ -16,7 +16,8 @@ class ElasticQueryTest extends SapphireTest
             [
                 'text'   => 'Testing',
                 'fields' => [],
-                'boost'  => 1
+                'boost'  => 1,
+                'fuzzy'  => null
             ]
         ], $query->getTerms());
 
@@ -32,6 +33,28 @@ class ElasticQueryTest extends SapphireTest
                 'text'   => 'Test 2',
                 'fields' => ['SiteTree.Title'],
                 'boost'  => 2
+            ]
+        ], $query->getTerms());
+
+        $query->addTerm('Fuzzy test', [], 1, true);
+
+
+        $this->assertEquals([
+            [
+                'text'   => 'Testing',
+                'fields' => [],
+                'boost'  => 1
+            ],
+            [
+                'text'   => 'Test 2',
+                'fields' => ['SiteTree.Title'],
+                'boost'  => 2
+            ],
+            [
+                'text'   => 'Fuzzy test',
+                'fields' => [],
+                'boost'  => 1,
+                'fuzzy'  => true
             ]
         ], $query->getTerms());
     }
