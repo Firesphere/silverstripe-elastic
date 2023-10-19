@@ -86,7 +86,7 @@ class ElasticIndexTest extends SapphireTest
         $expectedFacets = [
             'TestObject' => [
                 'BaseClass' => 'Page',
-                'Field'     => 'TestObject.Title',
+                'Field'     => 'TestObject.ID',
                 'Title'     => 'TestObject',
             ]
         ];
