@@ -206,12 +206,4 @@ class ElasticConfigureTask extends BuildTask
     {
         return $this->service;
     }
-
-    /**
-     * @param ElasticCoreService|mixed|object|Injector $service
-     */
-    public function setService(mixed $service): void
-    {
-        $this->service = $service;
-    }
 }
