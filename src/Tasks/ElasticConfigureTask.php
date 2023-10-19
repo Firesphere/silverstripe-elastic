@@ -5,6 +5,7 @@ namespace Firesphere\ElasticSearch\Tasks;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\MissingParameterException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
+use Elastic\Elasticsearch\Response\Elasticsearch;
 use Exception;
 use Firesphere\ElasticSearch\Helpers\Statics;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
@@ -12,10 +13,11 @@ use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Helpers\FieldResolver;
 use Firesphere\SearchBackend\Traits\LoggerTrait;
 use Psr\Container\NotFoundExceptionInterface;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
-use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\DB;
 
 class ElasticConfigureTask extends BuildTask
 {
@@ -33,26 +35,48 @@ class ElasticConfigureTask extends BuildTask
      * @var string Description
      */
     protected $description = 'Create or reload a Elastic Core by adding or reloading a configuration.';
+    /**
+     * @var ElasticCoreService $service
+     */
+    protected $service;
 
+    /**
+     * @throws NotFoundExceptionInterface
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->service = Injector::inst()->get(ElasticCoreService::class);
+    }
 
+    /**
+     * Run the config
+     *
+     * @param HTTPRequest $request
+     * @return void|array
+     * @throws NotFoundExceptionInterface
+     */
     public function run($request)
     {
         $this->extend('onBeforeElasticConfigureTask', $request);
 
-        /** @var ElasticCoreService $service */
-        $service = Injector::inst()->get(ElasticCoreService::class);
+        $indexes = $this->service->getValidIndexes();
 
-        $indexes = $service->getValidIndexes();
-
+        $result = [];
 
         foreach ($indexes as $index) {
             try {
-                if ($request->getVar('clear')) {
-                    $this->getLogger()->info(sprintf('Clearing index %s', $index));
-                    $service->getClient()->indices()->delete(['index' => $index]);
+                /** @var ElasticIndex $instance */
+                $instance = Injector::inst()->get($index, false);
+
+                if ($request->getVar('clear') && $instance->indexExists()) {
+                    $this->getLogger()->info(sprintf('Clearing index %s', $instance->getIndexName()));
+                    $deleteResult = $this->service->getClient()->indices()->delete(['index' => $instance->getIndexName()]);
+                    $result[] = $deleteResult->asBool();
                 }
 
-                $this->configureIndex($index, $service);
+                $configResult = $this->configureIndex($instance);
+                $result[] = $configResult->asBool();
             } catch (Exception $error) {
                 // @codeCoverageIgnoreStart
                 $this->getLogger()->error(sprintf('Core loading failed for %s', $index));
@@ -65,40 +89,55 @@ class ElasticConfigureTask extends BuildTask
         }
 
         $this->extend('onAfterElasticConfigureTask');
+
+        if ($request->getVar('istest')) {
+            return $result;
+        }
     }
 
     /**
      * Update/create a store
-     * @param string $index
-     * @param ElasticCoreService $service
-     * @return void
+     * @param ElasticIndex $instance
+     * @return Elasticsearch
      * @throws ClientResponseException
      * @throws MissingParameterException
      * @throws ServerResponseException
      * @throws NotFoundExceptionInterface
      */
-    protected function configureIndex($index, ElasticCoreService $service)
+    protected function configureIndex($instance): Elasticsearch
     {
-        /** @var ElasticIndex $instance */
-        $instance = Injector::inst()->get($index, false);
-
         $indexName = $instance->getIndexName();
 
 
         $instanceConfig = $this->createConfigForIndex($instance);
 
-        $body = $this->configToJSON($instanceConfig);
-        $body['index'] = $indexName;
-        $client = $service->getClient();
+        $mappings = $this->convertForJSON($instanceConfig);
 
-        $method = $this->getMethod($instance, $service);
+        $body['index'] = $indexName;
+        $client = $this->service->getClient();
+
+        $method = $this->getMethod($instance);
+        $msg = "%s index %s";
         if ($method === 'update') {
-            $client->indices()->putMapping($body);
+            $body['body'] = $mappings;
+            $msg = sprintf($msg, 'Updating', $indexName);
+            DB::alteration_message($msg);
+            $this->getLogger()->info($msg);
+            return $client->indices()->putMapping($body);
         } else {
-            $client->indices()->create($body);
+            $body['body']['mappings'] = $mappings;
+            $msg = sprintf($msg, 'Creating', $indexName);
+            DB::alteration_message($msg);
+            $this->getLogger()->info($msg);
+            return $client->indices()->create($body);
         }
     }
 
+    /**
+     * @param ElasticIndex $instance
+     * @return array
+     * @throws NotFoundExceptionInterface
+     */
     protected function createConfigForIndex(ElasticIndex $instance)
     {
         /** @var FieldResolver $resolver */
@@ -114,7 +153,14 @@ class ElasticConfigureTask extends BuildTask
         return $result;
     }
 
-    protected function configToJSON($config)
+    /**
+     * Take the config from the resolver and build an array that's
+     * ready to be converted to JSON for Elastic.
+     *
+     * @param $config
+     * @return array[]
+     */
+    protected function convertForJSON($config)
     {
         $base = [];
         $typeMap = Statics::getTypeMap();
@@ -127,17 +173,24 @@ class ElasticConfigureTask extends BuildTask
             ];
         }
 
-        $mappings = ['properties' => $base];
-
-        return ['body' => ['mappings' => $mappings]];
+        return ['properties' => $base];
     }
 
-    protected function getMethod(ElasticIndex $index, ElasticCoreService $service)
+    /**
+     * Get the method to use. Create or Update
+     *
+     * WARNING: Update often fails because Elastic does not allow changing
+     * of mappings on-the-fly, it will commonly require a delete-and-recreate!
+     *
+     * @param ElasticIndex $index
+     * @return string
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws ServerResponseException
+     */
+    protected function getMethod(ElasticIndex $index): string
     {
-        $check = $service->getClient()
-            ->indices()
-            ->exists(['index' => $index->getIndexName()])
-            ->asBool();
+        $check = $index->indexExists();
 
         if ($check) {
             return 'update';
@@ -145,23 +198,12 @@ class ElasticConfigureTask extends BuildTask
 
         return 'create';
     }
-}
 
-$params = [
-    'index' => 'my_index',
-    'body'  => [
-        'mappings' => [
-            '_source'    => [
-                'enabled' => true
-            ],
-            'properties' => [
-                'first_name' => [
-                    'type' => 'keyword'
-                ],
-                'age'        => [
-                    'type' => 'integer'
-                ]
-            ]
-        ]
-    ]
-];
+    /**
+     * @return ElasticCoreService|mixed|object|Injector
+     */
+    public function getService(): mixed
+    {
+        return $this->service;
+    }
+}
