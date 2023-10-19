@@ -32,7 +32,7 @@ class QueryBuilderTest extends SapphireTest
                                     'terms' => [
                                         'ViewStatus' => [
                                             "null",
-//                                            'LoggedIn'
+                                            'LoggedIn'
                                         ],
                                     ]
                                 ],

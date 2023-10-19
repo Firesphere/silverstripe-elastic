@@ -58,6 +58,7 @@ class ElasticIndexTest extends SapphireTest
         $conf['FulltextFields'] = array_merge(
             $conf['FulltextFields'] ?? [],
         );
+        $conf['FulltextFields'][] = 'TestObject.ID';
         $this->assertEquals($conf['FulltextFields'], $index->getFulltextFields());
         $index->addFulltextField('Dummyfield');
         $conf['FulltextFields'][] = 'Dummyfield';
