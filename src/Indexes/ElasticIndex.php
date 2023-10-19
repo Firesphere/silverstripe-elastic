@@ -114,18 +114,14 @@ abstract class ElasticIndex extends CoreIndex
     }
 
     /**
-     * @param HTTPRequest|null $request
+     * @param HTTPRequest $request
      * @return bool
      */
-    private function shouldClear(?HTTPRequest $request = null): bool
+    private function shouldClear(HTTPRequest $request): bool
     {
-        if ($request !== null) {
-            $var = $request->getVar('clear');
+        $var = $request->getVar('clear');
 
-            return !empty($var);
-        }
-
-        return false;
+        return !empty($var);
     }
 
 
