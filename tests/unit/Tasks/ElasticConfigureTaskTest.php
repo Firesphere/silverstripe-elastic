@@ -2,6 +2,7 @@
 
 namespace Firesphere\ElasticSearch\Tests\unit\Tasks;
 
+use App\src\SearchIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\ElasticSearch\Tasks\ElasticConfigureTask;
 use SilverStripe\Control\HTTPRequest;
@@ -26,5 +27,14 @@ class ElasticConfigureTaskTest extends SapphireTest
 
         $this->assertNotContains(false, $task->result);
 
+    }
+
+    public function testConfigureIndex()
+    {
+        $index = new SearchIndex();
+        $task = new ElasticConfigureTask();
+        $result = $task->configureIndex($index);
+
+        $this->assertTrue($result->asBool());
     }
 }

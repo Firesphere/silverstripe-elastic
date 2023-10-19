@@ -9,7 +9,10 @@
 
 namespace Firesphere\ElasticSearch\Tasks;
 
+use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\HttpClientException;
+use Elastic\Elasticsearch\Exception\MissingParameterException;
+use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Exception;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
@@ -103,10 +106,13 @@ class ElasticIndexTask extends BuildTask
 
     /**
      * @param HTTPRequest $request
-     * @return int|void
+     * @return bool|int
+     * @throws HttpClientException
      * @throws HttpException
      * @throws NotFoundExceptionInterface
-     * @throws HttpClientException
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws ServerResponseException
      */
     public function run($request)
     {
@@ -123,6 +129,10 @@ class ElasticIndexTask extends BuildTask
             $classes = $this->getClasses($vars, $indexClasses);
             if (!count($classes)) {
                 continue;
+            }
+            // If clearing, also configure
+            if ($index->deleteIndex($request)) {
+                (new ElasticConfigureTask())->configureIndex($index);
             }
 
             // Get the groups

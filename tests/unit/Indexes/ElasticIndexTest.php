@@ -5,6 +5,8 @@ namespace Firesphere\ElasticSearch\Tests;
 use App\src\SearchIndex;
 use Elastic\Elasticsearch\Client;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
+use Firesphere\ElasticSearch\Tasks\ElasticIndexTask;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 
@@ -118,5 +120,18 @@ class ElasticIndexTest extends SapphireTest
     public function testIndexExists()
     {
         $this->assertNotNull($this->index->indexExists());
+    }
+
+    public function testNoClearIndex()
+    {
+        $request = new HTTPRequest('GET', 'dev/tasks/ElasticIndexTask');
+        $isCleared = $this->index->deleteIndex($request);
+        $this->assertFalse($isCleared);
+        $request = new HTTPRequest('GET', 'dev/tasks/ElasticIndexTask', ['clear' => true]);
+        $isCleared = $this->index->deleteIndex($request);
+        $this->assertTrue($isCleared);
+
+        // Ensure everything is back in place.
+        (new ElasticIndexTask())->run($request);
     }
 }
