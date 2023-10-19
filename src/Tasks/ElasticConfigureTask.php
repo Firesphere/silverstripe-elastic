@@ -71,7 +71,8 @@ class ElasticConfigureTask extends BuildTask
 
                 if ($request->getVar('clear') && $instance->indexExists()) {
                     $this->getLogger()->info(sprintf('Clearing index %s', $instance->getIndexName()));
-                    $this->service->getClient()->indices()->delete(['index' => $instance->getIndexName()]);
+                    $deleteResult = $this->service->getClient()->indices()->delete(['index' => $instance->getIndexName()]);
+                    $result[] = $deleteResult->asBool();
                 }
 
                 $configResult = $this->configureIndex($instance);

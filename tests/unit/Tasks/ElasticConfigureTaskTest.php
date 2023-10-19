@@ -21,7 +21,10 @@ class ElasticConfigureTaskTest extends SapphireTest
 
         $this->assertNotContains(false, $run);
 
-        // @todo see if the logger is happy (Only info logs)
-        $task->getLogger();
+        // Same, but with clearing
+        $run = $task->run(new HTTPRequest('GET', 'dev/tasks/ElasticConfigureTask', ['istest' => self::$is_running_test, 'clear' => true]));
+
+        $this->assertNotContains(false, $run);
+
     }
 }

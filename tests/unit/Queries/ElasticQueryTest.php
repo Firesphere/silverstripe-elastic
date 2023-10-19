@@ -7,7 +7,6 @@ use SilverStripe\Dev\SapphireTest;
 
 class ElasticQueryTest extends SapphireTest
 {
-
     public function testTerms()
     {
         $query = new ElasticQuery();
