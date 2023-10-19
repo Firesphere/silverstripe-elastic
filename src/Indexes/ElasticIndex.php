@@ -99,7 +99,7 @@ abstract class ElasticIndex extends CoreIndex
      * @throws NotFoundExceptionInterface
      * @throws ServerResponseException
      */
-    public function deleteIndex(?HTTPRequest $request = null): bool
+    public function deleteIndex(HTTPRequest $request): bool
     {
         $deleteResult = false;
         if ($this->shouldClear($request) && $this->indexExists()) {
