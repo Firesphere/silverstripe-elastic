@@ -17,14 +17,14 @@ class ElasticConfigureTaskTest extends SapphireTest
 
         $this->assertInstanceOf(ElasticCoreService::class, $task->getService());
 
-        $run = $task->run(new HTTPRequest('GET', 'dev/tasks/ElasticConfigureTask', ['istest' => self::$is_running_test]));
+        $task->run(new HTTPRequest('GET', 'dev/tasks/ElasticConfigureTask', ['istest' => self::$is_running_test]));
 
-        $this->assertNotContains(false, $run);
+        $this->assertNotContains(false, $task->result);
 
         // Same, but with clearing
-        $run = $task->run(new HTTPRequest('GET', 'dev/tasks/ElasticConfigureTask', ['istest' => self::$is_running_test, 'clear' => true]));
+        $task->run(new HTTPRequest('GET', 'dev/tasks/ElasticConfigureTask', ['istest' => self::$is_running_test, 'clear' => true]));
 
-        $this->assertNotContains(false, $run);
+        $this->assertNotContains(false, $task->result);
 
     }
 }
