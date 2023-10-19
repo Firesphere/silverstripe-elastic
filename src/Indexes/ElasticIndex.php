@@ -10,6 +10,7 @@
 namespace Firesphere\ElasticSearch\Indexes;
 
 use Elastic\Elasticsearch\Exception\ClientResponseException;
+use Elastic\Elasticsearch\Exception\MissingParameterException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Firesphere\ElasticSearch\Queries\Builders\QueryBuilder;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
@@ -83,6 +84,20 @@ abstract class ElasticIndex extends CoreIndex
         }
 
         $this->initFromConfig($config);
+    }
+
+    /**
+     * @return bool
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws ServerResponseException
+     */
+    public function indexExists(): bool
+    {
+        return $this->getClient()
+            ->indices()
+            ->exists(['index' => $this->getIndexName()])
+            ->asBool();
     }
 
     abstract public function getIndexName();

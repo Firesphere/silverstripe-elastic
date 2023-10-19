@@ -5,6 +5,7 @@ namespace Firesphere\ElasticSearch\Tasks;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\MissingParameterException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
+use Elastic\Elasticsearch\Response\Elasticsearch;
 use Exception;
 use Firesphere\ElasticSearch\Helpers\Statics;
 use Firesphere\ElasticSearch\Indexes\ElasticIndex;
@@ -16,6 +17,7 @@ use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\DB;
 
 class ElasticConfigureTask extends BuildTask
 {
@@ -51,7 +53,7 @@ class ElasticConfigureTask extends BuildTask
      * Run the config
      *
      * @param HTTPRequest $request
-     * @return void
+     * @return void|array
      * @throws NotFoundExceptionInterface
      */
     public function run($request)
@@ -60,18 +62,20 @@ class ElasticConfigureTask extends BuildTask
 
         $indexes = $this->service->getValidIndexes();
 
+        $result = [];
 
         foreach ($indexes as $index) {
             try {
                 /** @var ElasticIndex $instance */
                 $instance = Injector::inst()->get($index, false);
 
-                if ($request->getVar('clear') && $this->indexIsNew($instance)) {
+                if ($request->getVar('clear') && $instance->indexExists()) {
                     $this->getLogger()->info(sprintf('Clearing index %s', $instance->getIndexName()));
                     $this->service->getClient()->indices()->delete(['index' => $instance->getIndexName()]);
                 }
 
-                $this->configureIndex($instance);
+                $configResult = $this->configureIndex($instance);
+                $result[] = $configResult->asBool();
             } catch (Exception $error) {
                 // @codeCoverageIgnoreStart
                 $this->getLogger()->error(sprintf('Core loading failed for %s', $index));
@@ -84,33 +88,47 @@ class ElasticConfigureTask extends BuildTask
         }
 
         $this->extend('onAfterElasticConfigureTask');
+
+        if ($request->getVar('istest')) {
+            return $result;
+        }
     }
 
     /**
      * Update/create a store
-     * @param string $index
-     * @return void
+     * @param ElasticIndex $instance
+     * @return Elasticsearch
      * @throws ClientResponseException
      * @throws MissingParameterException
      * @throws ServerResponseException
      * @throws NotFoundExceptionInterface
      */
-    protected function configureIndex($instance)
+    protected function configureIndex($instance): Elasticsearch
     {
         $indexName = $instance->getIndexName();
 
 
         $instanceConfig = $this->createConfigForIndex($instance);
 
-        $body = $this->convertForJSON($instanceConfig);
+        $mappings = $this->convertForJSON($instanceConfig);
+
         $body['index'] = $indexName;
         $client = $this->service->getClient();
 
         $method = $this->getMethod($instance);
+        $msg = "%s index %s";
         if ($method === 'update') {
-            $client->indices()->putMapping($body);
+            $body['body'] = $mappings;
+            $msg = sprintf($msg, 'Updating', $indexName);
+            DB::alteration_message($msg);
+            $this->getLogger()->info($msg);
+            return $client->indices()->putMapping($body);
         } else {
-            $client->indices()->create($body);
+            $body['body']['mappings'] = $mappings;
+            $msg = sprintf($msg, 'Creating', $indexName);
+            DB::alteration_message($msg);
+            $this->getLogger()->info($msg);
+            return $client->indices()->create($body);
         }
     }
 
@@ -154,9 +172,7 @@ class ElasticConfigureTask extends BuildTask
             ];
         }
 
-        $mappings = ['properties' => $base];
-
-        return ['body' => ['mappings' => $mappings]];
+        return ['properties' => $base];
     }
 
     /**
@@ -173,30 +189,13 @@ class ElasticConfigureTask extends BuildTask
      */
     protected function getMethod(ElasticIndex $index): string
     {
-        $check = $this->indexIsNew($index);
+        $check = $index->indexExists();
 
         if ($check) {
             return 'update';
         }
 
         return 'create';
-    }
-
-    /**
-     * @param ElasticIndex $index
-     * @return bool
-     * @throws ClientResponseException
-     * @throws MissingParameterException
-     * @throws ServerResponseException
-     */
-    protected function indexIsNew(ElasticIndex $index): bool
-    {
-        $check = $this->service->getClient()
-            ->indices()
-            ->exists(['index' => $index->getIndexName()])
-            ->asBool();
-
-        return $check;
     }
 
     /**

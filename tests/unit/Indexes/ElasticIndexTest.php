@@ -113,4 +113,9 @@ class ElasticIndexTest extends SapphireTest
         $index->addAllDateFields();
         $this->assertNotEquals($array, $index->getFulltextFields());
     }
+
+    public function testIndexExists()
+    {
+        $this->assertNotNull($this->index->indexExists());
+    }
 }
