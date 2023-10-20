@@ -174,14 +174,19 @@ and as such passed in as an extra, required, filter.
 - [x] Highlighting~ish
 - [x] Synonyms
 - [x] Group-access filtering (e.g. all, administrators, specific groups, from access setting in the CMS)
+- [x] Boosting
+- [x] Faceting
+- [x] Spellchecking
+- [x] Unit tests and integration tests
 
 #### On the to-do list is:
 
 - [ ] Work out the filtering better
-- [ ] Boosting
-- [ ] Faceting
-- [ ] Spellchecking
-- [ ] Unit tests and integration tests
+- [ ] File content searching
+- [ ] Submodules for
+  - [ ] Member level permissions
+  - [ ] Subsites
+  - [ ] Fluent
 
 # Cow?
 
