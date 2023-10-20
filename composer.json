@@ -15,11 +15,6 @@
       "email": "github@casa-laguna.net",
       "homepage": "https://firesphere.dev",
       "role": "Lead developer"
-    },
-    {
-      "name": "Marco `Sheepy` Hermo",
-      "email": "marco@silverstripe.com",
-      "role": "Lead developer"
     }
   ],
   "require": {

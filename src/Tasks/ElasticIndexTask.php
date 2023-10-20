@@ -227,11 +227,6 @@ class ElasticIndexTask extends BuildTask
         return $this->groups;
     }
 
-    public function setGroups(int $groups): void
-    {
-        $this->groups = $groups;
-    }
-
     /**
      * Index a single class for a given index. {@link static::indexClassForIndex()}
      *
@@ -239,8 +234,6 @@ class ElasticIndexTask extends BuildTask
      * @param string $class Class to index
      * @param int $group Group to index
      * @return int|bool
-     * @throws HTTPException
-     * @throws ValidationException
      */
     private function indexClass(bool $isGroup, string $class, int $group)
     {
