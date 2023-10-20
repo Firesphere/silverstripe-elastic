@@ -3,6 +3,7 @@
 namespace Firesphere\ElasticSearch\Tests\unit\Extensions;
 
 use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Firesphere\ElasticSearch\Extensions\ElasticSynonymExtension;
 use Firesphere\ElasticSearch\Models\SynonymSet;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
@@ -44,14 +45,30 @@ class ElasticSynonymExtensionTest extends SapphireTest
 
         $this->assertEquals(['id' => $synonym->getModifiedID(), 'synonyms' => $synonym->getCombinedSynonym()], $check);
 
-        $synonym->delete();
+        $synonym->Synonym = 'Firesphere,Hans';
+        $synonym->write();
 
         $synonymCheck = $client->synonyms()->getSynonymRule([
             'set_id'  => $set->Key,
             'rule_id' => $synonym->getModifiedID()
         ]);
 
-        $this->assertEquals(404, $synonymCheck->getStatusCode());
+        $check = $synonymCheck->asArray();
+
+        $this->assertEquals(['id' => $synonym->getModifiedID(), 'synonyms' => $synonym->getCombinedSynonym()], $check);
+
+
+        $synonym->delete();
+
+        try {
+            $client->synonyms()->getSynonymRule([
+                'set_id'  => $set->Key,
+                'rule_id' => $synonym->getModifiedID()
+            ]);
+        } catch (ClientResponseException $e) {
+            $this->assertEquals(404, $e->getCode());
+        }
+
 
     }
 }
