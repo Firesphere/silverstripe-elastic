@@ -6,7 +6,9 @@ use Elastic\Elasticsearch\Client;
 use Firesphere\ElasticSearch\Extensions\ElasticSynonymExtension;
 use Firesphere\ElasticSearch\Models\SynonymSet;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
+use Firesphere\ElasticSearch\Tasks\ElasticConfigureSynonymsTask;
 use Firesphere\SearchBackend\Models\SearchSynonym;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 
@@ -15,6 +17,12 @@ class ElasticSynonymExtensionTest extends SapphireTest
 
     public function testOnAfterWrite()
     {
+        (new SynonymSet())->requireDefaultRecords();
+        $request = new HTTPRequest('GET', 'dev/tasks/ElasticSynonymTask');
+        $task = new ElasticConfigureSynonymsTask();
+
+        $task->run($request);
+
         SynonymSet::singleton()->requireDefaultRecords();
         /** @var SynonymSet $set */
         $set = SynonymSet::get()->first();
@@ -24,7 +32,6 @@ class ElasticSynonymExtensionTest extends SapphireTest
         $extension->setOwner($synonym);
 
         $synonym->write();
-        $extension->onAfterWrite();
 
         /** @var Client $client */
         $client = Injector::inst()->get(ElasticCoreService::class)->getClient();
@@ -37,8 +44,8 @@ class ElasticSynonymExtensionTest extends SapphireTest
 
         $this->assertEquals(['id' => $set->Key, 'synonyms' => $synonym->getCombinedSynonym()], $check);
 
-        $synonym->onAfterDelete();
-        $extension->onAfterDelete();
+        $synonym->delete();
+
         $synonymCheck = $client->synonyms()->getSynonymRule([
             'set_id'  => $set->Key,
             'rule_id' => $synonym->getModifiedID()
