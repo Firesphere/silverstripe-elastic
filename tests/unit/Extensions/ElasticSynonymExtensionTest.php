@@ -15,7 +15,7 @@ use SilverStripe\Dev\SapphireTest;
 class ElasticSynonymExtensionTest extends SapphireTest
 {
 
-    public function testOnAfterWrite()
+    public function testWriteUpdateDelete()
     {
         (new SynonymSet())->requireDefaultRecords();
         $request = new HTTPRequest('GET', 'dev/tasks/ElasticSynonymTask');
@@ -42,7 +42,7 @@ class ElasticSynonymExtensionTest extends SapphireTest
 
         $check = $synonymCheck->asArray();
 
-        $this->assertEquals(['id' => $set->Key, 'synonyms' => $synonym->getCombinedSynonym()], $check);
+        $this->assertEquals(['id' => $synonym->getModifiedID(), 'synonyms' => $synonym->getCombinedSynonym()], $check);
 
         $synonym->delete();
 
