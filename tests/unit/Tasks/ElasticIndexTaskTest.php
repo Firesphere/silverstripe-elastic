@@ -33,14 +33,14 @@ class ElasticIndexTaskTest extends SapphireTest
         $page->publishSingle();
         $task = new ElasticIndexTask();
         $request = new HTTPRequest('GET', 'dev/tasks/ElasticIndexTask');
-        $result = $task->run($request);
+        $task->run($request);
 
-        $this->assertGreaterThan(0, $result);
+        $this->assertGreaterThan(0, $task->getGroups());
         $this->assertinstanceOf(ElasticIndex::class, $task->getIndex());
         $request = new HTTPRequest('GET', 'dev/tasks/ElasticIndexTask', ['clear' => true]);
-        $result = $task->run($request);
+        $task->run($request);
 
-        $this->assertGreaterThan(0, $result);
+        $this->assertGreaterThan(0, $task->getGroups());
         $this->assertinstanceOf(ElasticIndex::class, $task->getIndex());
     }
 }

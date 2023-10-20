@@ -89,6 +89,11 @@ class ElasticIndexTask extends BuildTask
     protected $index;
 
     /**
+     * @var int
+     */
+    protected $groups = 0;
+
+    /**
      * ElasticIndexTask constructor. Sets up the document factory
      *
      * @throws NotFoundExceptionInterface
@@ -142,7 +147,7 @@ class ElasticIndexTask extends BuildTask
         $time = gmdate('H:i:s', (time() - $start));
         $this->getLogger()->info(sprintf('Time taken: %s', $time));
 
-        return $groups;
+        $this->groups = $groups;
     }
 
     /**
@@ -217,6 +222,11 @@ class ElasticIndexTask extends BuildTask
         return $this;
     }
 
+    public function getGroups(): int
+    {
+        return $this->groups;
+    }
+
     /**
      * Index a single class for a given index. {@link static::indexClassForIndex()}
      *
@@ -224,8 +234,6 @@ class ElasticIndexTask extends BuildTask
      * @param string $class Class to index
      * @param int $group Group to index
      * @return int|bool
-     * @throws HTTPException
-     * @throws ValidationException
      */
     private function indexClass(bool $isGroup, string $class, int $group)
     {
