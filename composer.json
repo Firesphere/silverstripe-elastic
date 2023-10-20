@@ -25,7 +25,7 @@
   "require": {
     "php": ">=8.0",
     "ext-json": "*",
-    "firesphere/searchbackend": "1.x-dev",
+    "firesphere/searchbackend": "^1.0",
     "elasticsearch/elasticsearch": "^8.10",
     "elastic/enterprise-search": "^8.10"
   },
