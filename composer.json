@@ -27,7 +27,8 @@
   "require-dev": {
     "silverstripe/recipe-cms": "^4|^5",
     "phpunit/phpunit": "^9.5",
-    "friendsofphp/php-cs-fixer": "^3.35"
+    "friendsofphp/php-cs-fixer": "^3.35",
+    "firesphere/searchbackend": "dev-main as 1.999999999"
   },
   "extra": {
     "branch-alias": {
