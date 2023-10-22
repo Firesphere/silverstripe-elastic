@@ -113,7 +113,7 @@ abstract class ElasticIndex extends CoreIndex
             ->asBool();
     }
 
-    abstract public function getIndexName();
+    abstract public function getIndexName(): string;
 
     /**
      * Get classes
