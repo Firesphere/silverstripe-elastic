@@ -25,7 +25,6 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
 
 /**
@@ -36,6 +35,7 @@ use SilverStripe\Versioned\Versioned;
 class DataObjectElasticExtension extends DataExtension
 {
     protected $deletedFromElastic;
+
     /**
      * @throws NotFoundExceptionInterface
      */
@@ -131,9 +131,37 @@ class DataObjectElasticExtension extends DataExtension
 
         if ($owner->hasField('ShowInSearch') &&
             $owner->isChanged('ShowInSearch') &&
-            !$owner->ShowInSearch) {
+            !$owner->ShowInSearch
+        ) {
             $this->deletedFromElastic = $this->deleteFromElastic();
         }
+    }
+
+    /**
+     * Check if:
+     * - Owner has Versioned
+     * - The versioned object is published
+     * - The owner has the "ShowInSearch" Field
+     * - And if so, is it set.
+     * @param SiteTree|DataObjectSearchExtension|DataObjectElasticExtension|Versioned|DataObject $owner
+     * @return bool
+     */
+    public function shouldPush(DataObject $owner): bool
+    {
+        $showInSearch = true;
+        $versioned = $owner->hasExtension(Versioned::class);
+        if ($versioned) {
+            $versioned = $owner->isPublished();
+        } else {
+            // The owner is not versioned, so no publishing check
+            $versioned = true;
+        }
+        $hasField = $owner->hasField('ShowInSearch');
+        if ($hasField) {
+            $showInSearch = $owner->ShowInSearch;
+        }
+
+        return ($versioned && $showInSearch);
     }
 
     /**
@@ -174,31 +202,5 @@ class DataObjectElasticExtension extends DataExtension
     public function isDeletedFromElastic()
     {
         return $this->deletedFromElastic;
-    }
-
-    /**
-     * Check if:
-     * - Owner has Versioned
-     * - The versioned object is published
-     * - The owner has the "ShowInSearch" Field
-     * - And if so, is it set.
-     * @param SiteTree|DataObjectSearchExtension|DataObjectElasticExtension|Versioned|DataObject $owner
-     * @return bool
-     */
-    public function shouldPush(DataObject $owner): bool
-    {
-        $showInSearch = true;
-        $versioned = $owner->hasExtension(Versioned::class);
-        if ($versioned) {
-            $versioned = $owner->isPublished();
-        } else {
-            // The owner is not versioned, so no publishing check
-            $versioned = true;
-        }
-        $hasField = $owner->hasField('ShowInSearch');
-        if ($hasField) {
-            $showInSearch = $owner->ShowInSearch;
-        }
-        return ($versioned && $showInSearch);
     }
 }

@@ -10,15 +10,11 @@
 
 namespace Firesphere\ElasticSearch\Extensions;
 
-use Elastic\Elasticsearch\Exception\ClientResponseException;
-use Elastic\Elasticsearch\Exception\MissingParameterException;
-use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Firesphere\ElasticSearch\Models\SynonymSet;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Models\SearchSynonym;
 use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataExtension;
 
 /**

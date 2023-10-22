@@ -16,18 +16,15 @@ use Firesphere\ElasticSearch\Queries\Builders\QueryBuilder;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use Firesphere\ElasticSearch\Results\SearchResult;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
-use Firesphere\ElasticSearch\Traits\IndexTraits\BaseIndexTrait;
 use Firesphere\SearchBackend\Indexes\CoreIndex;
 use Firesphere\SearchBackend\Traits\LoggerTrait;
 use Firesphere\SearchBackend\Traits\QueryTraits\QueryFilterTrait;
-use LogicException;
 use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Dev\Deprecation;
 
 /**
  * Base for managing a Elastic core.
@@ -43,7 +40,6 @@ abstract class ElasticIndex extends CoreIndex
     use Configurable;
     use Injectable;
     use QueryFilterTrait;
-    use BaseIndexTrait;
     use LoggerTrait;
 
     /**
@@ -157,20 +153,6 @@ abstract class ElasticIndex extends CoreIndex
     }
 
     /**
-     * Add a single Fulltext field
-     *
-     * @param string $fulltextField
-     * @param array $options
-     * @return $this
-     */
-    public function addFulltextField($fulltextField, $options = []): self
-    {
-        $this->fulltextFields[] = $fulltextField;
-
-        return $this;
-    }
-
-    /**
      * Add a filterable field
      * Compatibility stub for Solr
      *
@@ -181,6 +163,20 @@ abstract class ElasticIndex extends CoreIndex
     {
         $this->filterFields[] = $filterField;
         $this->addFulltextField($filterField);
+
+        return $this;
+    }
+
+    /**
+     * Add a single Fulltext field
+     *
+     * @param string $fulltextField
+     * @param array $options
+     * @return $this
+     */
+    public function addFulltextField($fulltextField, $options = []): self
+    {
+        $this->fulltextFields[] = $fulltextField;
 
         return $this;
     }

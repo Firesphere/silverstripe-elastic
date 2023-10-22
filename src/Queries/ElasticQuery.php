@@ -32,7 +32,7 @@ class ElasticQuery extends BaseQuery
             'text'   => $term,
             'fields' => $fields,
             'boost'  => $boost,
-            'fuzzy' => $fuzzy
+            'fuzzy'  => $fuzzy
         ];
 
         return $this;
