@@ -52,10 +52,9 @@ abstract class ElasticIndex extends CoreIndex
     protected $clientQuery;
 
     /**
-     * @var array Classes to index
+     * Set-up of core and fields through init
+     * @throws NotFoundExceptionInterface
      */
-    protected $class = [];
-
     public function __construct()
     {
         $this->client = Injector::inst()->get(ElasticCoreService::class)->getClient();
@@ -66,7 +65,7 @@ abstract class ElasticIndex extends CoreIndex
     }
 
     /**
-     * @param HTTPRequest|null $request
+     * @param HTTPRequest $request
      * @return bool
      * @throws ClientResponseException
      * @throws MissingParameterException
@@ -116,29 +115,6 @@ abstract class ElasticIndex extends CoreIndex
     abstract public function getIndexName(): string;
 
     /**
-     * Get classes
-     *
-     * @return array
-     */
-    public function getClasses(): array
-    {
-        return $this->class;
-    }
-
-    /**
-     * Set the classes
-     *
-     * @param array $class
-     * @return $this
-     */
-    public function setClasses($class): self
-    {
-        $this->class = $class;
-
-        return $this;
-    }
-
-    /**
      * @param ElasticQuery $query
      * @return SearchResult
      * @throws ClientResponseException
@@ -150,24 +126,7 @@ abstract class ElasticIndex extends CoreIndex
 
         $result = $this->client->search($this->clientQuery);
 
-        $result = new SearchResult($result, $query, $this);
-
-        return $result;
-    }
-
-    /**
-     * Add a class to index or query
-     * $options is not used anymore, added for backward compatibility
-     *
-     * @param $class
-     * @param array $options unused
-     * @return $this
-     */
-    public function addClass($class, $options = []): self
-    {
-        $this->class[] = $class;
-
-        return $this;
+        return new SearchResult($result, $query, $this);
     }
 
     public function getClientQuery(): array
