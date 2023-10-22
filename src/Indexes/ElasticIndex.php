@@ -50,6 +50,14 @@ abstract class ElasticIndex extends CoreIndex
      * @var array
      */
     protected $clientQuery;
+    /**
+     * @var array Fulltext fields
+     */
+    protected $fulltextFields = [];
+    /**
+     * @var array Filterable fields
+     */
+    protected $filterFields = [];
 
     /**
      * Set-up of core and fields through init
@@ -112,15 +120,14 @@ abstract class ElasticIndex extends CoreIndex
             ->asBool();
     }
 
-    abstract public function getIndexName(): string;
-
     /**
+     * {@inheritDoc}
      * @param ElasticQuery $query
      * @return SearchResult
      * @throws ClientResponseException
      * @throws ServerResponseException
      */
-    public function doSearch(ElasticQuery $query)
+    public function doSearch($query)
     {
         $this->clientQuery = QueryBuilder::buildQuery($query, $this);
 
@@ -129,13 +136,52 @@ abstract class ElasticIndex extends CoreIndex
         return new SearchResult($result, $query, $this);
     }
 
+    /**
+     * Get current client query array
+     * @return array
+     */
     public function getClientQuery(): array
     {
         return $this->clientQuery;
     }
 
+    /**
+     * Gives the option to completely override the client query set
+     *
+     * @param array $clientQuery
+     * @return void
+     */
     public function setClientQuery(array $clientQuery): void
     {
         $this->clientQuery = $clientQuery;
+    }
+
+    /**
+     * Add a single Fulltext field
+     *
+     * @param string $fulltextField
+     * @param array $options
+     * @return $this
+     */
+    public function addFulltextField($fulltextField, $options = []): self
+    {
+        $this->fulltextFields[] = $fulltextField;
+
+        return $this;
+    }
+
+    /**
+     * Add a filterable field
+     * Compatibility stub for Solr
+     *
+     * @param $filterField
+     * @return $this
+     */
+    public function addFilterField($filterField): self
+    {
+        $this->filterFields[] = $filterField;
+        $this->addFulltextField($filterField);
+
+        return $this;
     }
 }
