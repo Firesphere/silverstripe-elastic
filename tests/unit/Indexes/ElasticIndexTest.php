@@ -31,6 +31,11 @@ class ElasticIndexTest extends SapphireTest
     public function testConstruct()
     {
         $this->assertInstanceOf(Client::class, $this->index->getClient());
+        $existing = $this->index->getClientQuery();
+        $this->assertIsArray($this->index->getClientQuery());
+        $this->index->setClientQuery(['Hello' => 'World']);
+        $this->assertEquals(['Hello' => 'World'], $this->index->getClientQuery());
+        $this->index->setClientQuery($existing);
     }
 
     public function testInit()
