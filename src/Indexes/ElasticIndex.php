@@ -45,7 +45,7 @@ abstract class ElasticIndex extends CoreIndex
     /**
      * @var array
      */
-    protected $clientQuery;
+    protected $clientQuery = [];
     /**
      * @var array Fulltext fields
      */
@@ -145,11 +145,13 @@ abstract class ElasticIndex extends CoreIndex
      * Gives the option to completely override the client query set
      *
      * @param array $clientQuery
-     * @return void
+     * @return $this
      */
-    public function setClientQuery(array $clientQuery): void
+    public function setClientQuery(array $clientQuery): self
     {
         $this->clientQuery = $clientQuery;
+
+        return $this;
     }
 
     /**
