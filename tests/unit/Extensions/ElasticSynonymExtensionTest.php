@@ -15,7 +15,6 @@ use SilverStripe\Dev\SapphireTest;
 
 class ElasticSynonymExtensionTest extends SapphireTest
 {
-
     public function testWriteUpdateDelete()
     {
         (new SynonymSet())->requireDefaultRecords();

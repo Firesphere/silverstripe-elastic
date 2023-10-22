@@ -16,18 +16,15 @@ use Firesphere\ElasticSearch\Queries\Builders\QueryBuilder;
 use Firesphere\ElasticSearch\Queries\ElasticQuery;
 use Firesphere\ElasticSearch\Results\SearchResult;
 use Firesphere\ElasticSearch\Services\ElasticCoreService;
-use Firesphere\ElasticSearch\Traits\IndexTraits\BaseIndexTrait;
 use Firesphere\SearchBackend\Indexes\CoreIndex;
 use Firesphere\SearchBackend\Traits\LoggerTrait;
 use Firesphere\SearchBackend\Traits\QueryTraits\QueryFilterTrait;
-use LogicException;
 use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Dev\Deprecation;
 
 /**
  * Base for managing a Elastic core.
@@ -43,19 +40,25 @@ abstract class ElasticIndex extends CoreIndex
     use Configurable;
     use Injectable;
     use QueryFilterTrait;
-    use BaseIndexTrait;
     use LoggerTrait;
 
     /**
      * @var array
      */
-    protected $clientQuery;
+    protected $clientQuery = [];
+    /**
+     * @var array Fulltext fields
+     */
+    protected $fulltextFields = [];
+    /**
+     * @var array Filterable fields
+     */
+    protected $filterFields = [];
 
     /**
-     * @var array Classes to index
+     * Set-up of core and fields through init
+     * @throws NotFoundExceptionInterface
      */
-    protected $class = [];
-
     public function __construct()
     {
         $this->client = Injector::inst()->get(ElasticCoreService::class)->getClient();
@@ -65,34 +68,8 @@ abstract class ElasticIndex extends CoreIndex
         $this->extend('onAfterInit');
     }
 
-
     /**
-     * Required to initialise the fields.
-     * It's loaded in to the non-static properties for backward compatibility with FTS
-     * Also, it's a tad easier to use this way, loading the other way around would be very
-     * memory intensive, as updating the config for each item is not efficient
-     */
-    public function init()
-    {
-        $config = self::config()->get($this->getIndexName());
-        if (!$config) {
-            Deprecation::notice('5', 'Please set an index name and use a config yml');
-        }
-
-        if (!empty($this->getClasses())) {
-            if (!$this->usedAllFields) {
-                Deprecation::notice('5', 'It is advised to use a config YML for most cases');
-            }
-
-            return;
-        }
-
-        $this->initFromConfig($config);
-    }
-
-
-    /**
-     * @param HTTPRequest|null $request
+     * @param HTTPRequest $request
      * @return bool
      * @throws ClientResponseException
      * @throws MissingParameterException
@@ -139,94 +116,70 @@ abstract class ElasticIndex extends CoreIndex
             ->asBool();
     }
 
-    abstract public function getIndexName();
-
     /**
-     * Get classes
-     *
-     * @return array
-     */
-    public function getClasses(): array
-    {
-        return $this->class;
-    }
-
-    /**
-     * Generate the config from yml if possible
-     * @param array|null $config
-     */
-    protected function initFromConfig($config): void
-    {
-        if (!$config || !array_key_exists('Classes', $config)) {
-            throw new LogicException('No classes or config to index found!');
-        }
-
-        $this->setClasses($config['Classes']);
-
-        // For backward compatibility, copy the config to the protected values
-        // Saves doubling up further down the line
-        foreach (parent::$fieldTypes as $type) {
-            if (array_key_exists($type, $config)) {
-                $method = 'set' . $type;
-                if (method_exists($this, $method)) {
-                    $this->$method($config[$type]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Set the classes
-     *
-     * @param array $class
-     * @return $this
-     */
-    public function setClasses($class): self
-    {
-        $this->class = $class;
-
-        return $this;
-    }
-
-    /**
+     * {@inheritDoc}
      * @param ElasticQuery $query
      * @return SearchResult
      * @throws ClientResponseException
      * @throws ServerResponseException
      */
-    public function doSearch(ElasticQuery $query)
+    public function doSearch($query)
     {
         $this->clientQuery = QueryBuilder::buildQuery($query, $this);
 
         $result = $this->client->search($this->clientQuery);
 
-        $result = new SearchResult($result, $query, $this);
-
-        return $result;
+        return new SearchResult($result, $query, $this);
     }
 
     /**
-     * Add a class to index or query
-     * $options is not used anymore, added for backward compatibility
-     *
-     * @param $class
-     * @param array $options unused
-     * @return $this
+     * Get current client query array
+     * @return array
      */
-    public function addClass($class, $options = []): self
-    {
-        $this->class[] = $class;
-
-        return $this;
-    }
-
     public function getClientQuery(): array
     {
         return $this->clientQuery;
     }
 
-    public function setClientQuery(array $clientQuery): void
+    /**
+     * Gives the option to completely override the client query set
+     *
+     * @param array $clientQuery
+     * @return $this
+     */
+    public function setClientQuery(array $clientQuery): self
     {
         $this->clientQuery = $clientQuery;
+
+        return $this;
+    }
+
+    /**
+     * Add a filterable field
+     * Compatibility stub for Solr
+     *
+     * @param $filterField
+     * @return $this
+     */
+    public function addFilterField($filterField): self
+    {
+        $this->filterFields[] = $filterField;
+        $this->addFulltextField($filterField);
+
+        return $this;
+    }
+
+    /**
+     * Add a single Fulltext field
+     *
+     * @param string $fulltextField
+     * @param array $options
+     * @return $this
+     */
+    public function addFulltextField($fulltextField, $options = []): self
+    {
+        $this->fulltextFields[] = $fulltextField;
+
+        return $this;
     }
 }

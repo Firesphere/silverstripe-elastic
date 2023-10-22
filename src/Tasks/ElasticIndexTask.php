@@ -30,7 +30,6 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\SS_List;
-use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
 
 /**
@@ -312,7 +311,7 @@ class ElasticIndexTask extends BuildTask
      *
      * @param string $group Group to index
      * @param string $class Class to index
-     * @throws Exception
+     * @throws NotFoundExceptionInterface
      */
     private function indexStateClass(string $group, string $class): void
     {
