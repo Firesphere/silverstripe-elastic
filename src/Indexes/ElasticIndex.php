@@ -65,32 +65,6 @@ abstract class ElasticIndex extends CoreIndex
         $this->extend('onAfterInit');
     }
 
-
-    /**
-     * Required to initialise the fields.
-     * It's loaded in to the non-static properties for backward compatibility with FTS
-     * Also, it's a tad easier to use this way, loading the other way around would be very
-     * memory intensive, as updating the config for each item is not efficient
-     */
-    public function init()
-    {
-        $config = self::config()->get($this->getIndexName());
-        if (!$config) {
-            Deprecation::notice('5', 'Please set an index name and use a config yml');
-        }
-
-        if (!empty($this->getClasses())) {
-            if (!$this->usedAllFields) {
-                Deprecation::notice('5', 'It is advised to use a config YML for most cases');
-            }
-
-            return;
-        }
-
-        $this->initFromConfig($config);
-    }
-
-
     /**
      * @param HTTPRequest|null $request
      * @return bool
@@ -149,30 +123,6 @@ abstract class ElasticIndex extends CoreIndex
     public function getClasses(): array
     {
         return $this->class;
-    }
-
-    /**
-     * Generate the config from yml if possible
-     * @param array|null $config
-     */
-    protected function initFromConfig($config): void
-    {
-        if (!$config || !array_key_exists('Classes', $config)) {
-            throw new LogicException('No classes or config to index found!');
-        }
-
-        $this->setClasses($config['Classes']);
-
-        // For backward compatibility, copy the config to the protected values
-        // Saves doubling up further down the line
-        foreach (parent::$fieldTypes as $type) {
-            if (array_key_exists($type, $config)) {
-                $method = 'set' . $type;
-                if (method_exists($this, $method)) {
-                    $this->$method($config[$type]);
-                }
-            }
-        }
     }
 
     /**

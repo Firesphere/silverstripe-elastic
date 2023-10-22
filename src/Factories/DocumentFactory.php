@@ -15,6 +15,7 @@ use Firesphere\ElasticSearch\Services\ElasticCoreService;
 use Firesphere\SearchBackend\Extensions\DataObjectSearchExtension;
 use Firesphere\SearchBackend\Factories\DocumentCoreFactory;
 use Firesphere\SearchBackend\Services\BaseService;
+use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
@@ -42,7 +43,7 @@ class DocumentFactory extends DocumentCoreFactory
      * @param ElasticBaseIndex $index Index to push the documents to
      * @param null $update Elastic doesn't have an "Update" object
      * @return array Documents to be pushed
-     * @throws Exception
+     * @throws NotFoundExceptionInterface
      */
     public function buildItems($fields, $index, $update = null): array
     {
@@ -61,7 +62,9 @@ class DocumentFactory extends DocumentCoreFactory
             }
             $doc = [];
             $doc = $this->buildFields($fields, $doc, $item);
-            $doc['_text'] = $this->recursiveImplode($doc);
+            foreach ($index->getCopyFields() as $copyFieldName => $copyFields) {
+                $doc[$copyFieldName] = $this->recursiveImplode($doc);
+            }
             $doc = $this->addDefaultFields($doc, $item);
 
             $docs[] = $doc;
@@ -135,7 +138,13 @@ class DocumentFactory extends DocumentCoreFactory
         $doc[$name] = $value;//, $options['boost'], Document::MODIFIER_SET);
     }
 
-    protected function recursiveImplode($arr)
+    /**
+     * Recursively implode the array with values
+     * to a single text blob to use as the main indexed
+     * @param array $arr
+     * @return string
+     */
+    protected function recursiveImplode($arr): string
     {
         $return = [];
         foreach ($arr as $key => $value) {
