@@ -41,14 +41,6 @@ trait BaseIndexTrait
         return $this;
     }
 
-
-    /**
-     * This trait requires classes to be set, so getClasses can be called.
-     *
-     * @return array
-     */
-    abstract public function getClasses(): array;
-
     /**
      * Add a filterable field
      * Compatibility stub for Solr
