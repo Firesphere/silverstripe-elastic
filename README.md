@@ -5,8 +5,6 @@
 
 # Modern Silverstripe Elastic search
 
-### This module is made possible thanks to [Pikselin](https://pikselin.com)
-
 ## Installation
 
 `composer require firesphere/elastic`
